@@ -45,7 +45,7 @@ jobs:
         run: |
           rm -rf project
           mkdir project
-          unzip -q "IntroZoology_v5.6.3_NativeWebView_AndroidStudio.zip" -d project
+          unzip -q "Introduction-to-Zoology-v5.6.4-APK" -d project
 
           test -f project/settings.gradle
           test -f project/app/build.gradle
