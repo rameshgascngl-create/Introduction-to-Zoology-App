@@ -6,8 +6,8 @@ on:
     branches:
       - main
     paths:
-      -unzip -q "IntroZoology_v5.6.4_NativeWebView_AndroidStudio.zip" -d project
-      - ".github/workflows/build-apk.yml"
+      - "IntroZoology_v5.6.4_NativeWebView_AndroidStudio.zip"
+      - ".github/workflows/main.yml"
 
 permissions:
   contents: read
@@ -45,7 +45,7 @@ jobs:
         run: |
           rm -rf project
           mkdir project
-         IntroZoology_v5.6.4_NativeWebView_AndroidStudio.zip
+          unzip -q "IntroZoology_v5.6.4_NativeWebView_AndroidStudio.zip" -d project
 
           test -f project/settings.gradle
           test -f project/app/build.gradle
