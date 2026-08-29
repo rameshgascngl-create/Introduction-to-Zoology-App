@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "IntroZoology_v5.6.4_NativeWebView_AndroidStudio.zip"
+      -unzip -q "IntroZoology_v5.6.4_NativeWebView_AndroidStudio.zip" -d project
       - ".github/workflows/build-apk.yml"
 
 permissions:
