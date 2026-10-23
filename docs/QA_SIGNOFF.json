@@ -1,0 +1,42 @@
+{
+  "review_date": "2026-10-23",
+  "release_tag": null,
+  "source_sha": null,
+  "automated": {
+    "content_validation": false,
+    "debug_build": false,
+    "emulator_ui": false,
+    "android_13": false,
+    "android_14": false,
+    "android_15": false,
+    "android_16": false,
+    "accessibility": false
+  },
+  "device": {
+    "verified": false,
+    "device_model": null,
+    "android_version": null,
+    "portrait_nav": false,
+    "tamil_text": false,
+    "all_58_plates": false,
+    "zoom": false,
+    "rotation": false,
+    "offline": false,
+    "progress_persistence": false,
+    "quiz": false,
+    "screenshots_path": null,
+    "reviewer": null
+  },
+  "editorial": {
+    "english_28_chapters": false,
+    "tamil_28_chapters": false,
+    "scientific_58_plates": false,
+    "question_bank_62_explanations": false
+  },
+  "release": {
+    "signed_aab": false,
+    "target_api_36": false,
+    "store_metadata": false,
+    "privacy_review": false
+  }
+}
