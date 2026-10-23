@@ -2,7 +2,7 @@
 import json,pathlib,re,collections,sys,hashlib,struct
 project=pathlib.Path(__file__).resolve().parents[1]; a=project/'app/src/main/assets'
 d=json.loads((a/'content.json').read_text('utf8'))
-assert d['edition']=='6.1.0'
+assert d['edition'] in ('6.2.0-QA','6.2.0')
 assert len(d['units'])==5 and len(d['chapters'])==28
 assert len(d['plates'])==58
 assert len(d['questionBank'])==5
@@ -59,6 +59,18 @@ for bank in d['questionBank'].values():
     assert len(bank['cEn'])==len(bank['cTa'])
     for q in bank['mcqEn']+bank['mcqTa']:
         assert len(q['o'])==4 and q['a'] in 'ABCD',q
+        assert len(q.get('r','').strip())>=25,('Missing explanation',q['q'])
+        assert len(set(x.lower().strip() for x in q['o']))==4,('Duplicate options',q['q'])
+for unit,bank in d['questionBank'].items():
+    # Position balancing is a valid static invariant; answer letter must move with its option.
+    positions=collections.Counter(q['a'] for q in bank['mcqEn'])
+    assert max(positions.values())-min(positions.get(x,0) for x in 'ABCD')<=1,(unit,positions)
+    assert all(q['a']==t['a'] for q,t in zip(bank['mcqEn'],bank['mcqTa'])),unit
+    assert all(not re.search(r'[\u0B80-\u0BFF]',option) for q in bank['mcqEn'] for option in q['o']),('Tamil distractor in English',unit)
+    assert all(re.search(r'[\u0B80-\u0BFF]',q['r']) for q in bank['mcqTa']),('Missing Tamil rationale',unit)
+assert 'Functional physiology: processes' in by_id['3.5']['contentEn']
+assert 'உறுப்பு மண்டலங்களின் செயல்முறைகளும்' in by_id['3.5']['contentTa']
+
 assert not any('android.webkit.WebView' in p.read_text() for p in (project/'app/src/main/java').rglob('*.kt'))
 sums=[sum(len(v[k]) for v in d['questionBank'].values()) for k in ('mcqEn','bEn','cEn')]
 assert sums==[62,41,26],sums
