@@ -1,5 +1,5 @@
 """Full static integrity validation for native v6.1.0 textbook and editorial provenance."""
-import json,pathlib,re,collections,sys
+import json,pathlib,re,collections,sys,hashlib,struct
 project=pathlib.Path(__file__).resolve().parents[1]; a=project/'app/src/main/assets'
 d=json.loads((a/'content.json').read_text('utf8'))
 assert d['edition']=='6.1.0'
@@ -31,6 +31,28 @@ for plate in d['plates']:
         assert plate['kind']=='reference-notes' and plate.get('sourcePages')
     assert plate['enTitle'] and plate['taTitle']
 assert {p['chapter'] for p in d['plates']} >=ids
+
+# Phase II syllabus-equivalence gate: Habitat is explicitly required by Unit IV.
+by_id={c['id']:c for c in d['chapters']}
+ecology=by_id['4.2']
+assert 'habitat' in ecology['contentEn'].lower() and 'microhabitat' in ecology['contentEn'].lower()
+assert 'வாழிடம்' in ecology['contentTa'] and 'நுண்வாழிடம்' in ecology['contentTa']
+assert 'niche' in ecology['contentEn'].lower()
+assert any('habitat' in q['q'].lower() for q in d['questionBank']['4']['mcqEn'])
+assert any('வாழிடம்' in q['q'] for q in d['questionBank']['4']['mcqTa'])
+# Check actual figure bytes instead of trusting a filename and file size.
+plate_hashes=[]
+for plate in d['plates']:
+    image=(a/'plates'/plate['filename'])
+    with image.open('rb') as handle:
+        header=handle.read(24)
+    assert header[:8]==b'\\x89PNG\\r\\n\\x1a\\n',(plate['id'],'not PNG')
+    width,height=struct.unpack('>II',header[16:24])
+    assert width>=300 and height>=100,(plate['id'],'unreadably small',width,height)
+    plate_hashes.append(hashlib.sha256(image.read_bytes()).hexdigest())
+assert len(set(plate_hashes))==58,'Some teaching plates contain identical pixels'
+assert all(re.search(r'[\\u0B80-\\u0BFF]', c['contentTa']) for c in d['chapters']), 'Tamil body text missing'
+
 for bank in d['questionBank'].values():
     assert len(bank['mcqEn'])==len(bank['mcqTa'])
     assert len(bank['bEn'])==len(bank['bTa'])
