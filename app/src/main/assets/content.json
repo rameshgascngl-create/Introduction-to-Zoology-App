@@ -1150,13 +1150,13 @@
     {
       "id": "notes40",
       "chapter": "3.3",
-      "enTitle": "Classification of lipids",
-      "taTitle": "கொழுப்புகளின் வகைப்பாடு",
-      "enCap": "Reused illustration from the attached departmental Introduction to Zoology notes, PDF page 40. Source image, not an AI-redrawn anatomy plate.",
-      "taCap": "இணைக்கப்பட்ட விலங்கியல் குறிப்புகளின் 40ஆம் பக்கத்திலிருந்து பெறப்பட்ட படம்.",
+      "enTitle": "Major lipid classes — chemically correct overview",
+      "taTitle": "கொழுப்புப் பொருட்களின் முக்கிய வகைகளும் பணிகளும்",
+      "enCap": "Distinguishes triacylglycerols, phospholipids, waxes and sterols/steroids by chemistry and function; a new SVG master replaces the misleading inherited chart.",
+      "taCap": "டிரையசில்கிளிசரால்கள், பாஸ்போலிப்பிடுகள், மெழுகுகள், ஸ்டீரால்கள் ஆகியவற்றின் வேதியியல் வகையும் பணியும் காட்டப்படுகின்றன.",
       "filename": "notes_p40.png",
-      "sourceSvg": "",
-      "kind": "reference-notes",
+      "sourceSvg": "notes_p40.svg",
+      "kind": "original-2026-corrected",
       "sourcePages": [
         40
       ]
