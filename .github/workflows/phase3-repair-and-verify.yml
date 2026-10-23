@@ -6,11 +6,16 @@ on:
       - 'tools/repair_plates_phase3.py'
       - 'tools/validate_content.py'
       - 'app/src/main/assets/content.json'
+      - 'app/src/main/assets/svg/**'
+      - 'app/src/main/assets/plates/**'
       - 'app/src/main/java/**'
       - '.github/workflows/phase3-repair-and-verify.yml'
       - 'build.gradle.kts'
       - 'app/build.gradle.kts'
   workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: write
 jobs:
@@ -27,7 +32,7 @@ jobs:
           python3 -m pip install --user Pillow==11.3.0
           fc-cache -f
           fc-match -f '%{family}\n' ':lang=ta'
-      - name: Correct science flowcharts and regenerate 16 targeted diagrams
+      - name: Correct science flowcharts and regenerate corrected science and Tamil diagrams
         run: python3 tools/repair_plates_phase3.py
       - name: Assert new content, quiz and plate integrity
         run: python3 tools/validate_content.py
