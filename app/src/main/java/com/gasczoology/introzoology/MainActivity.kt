@@ -194,7 +194,7 @@ private fun ZoologyApp(data: Syllabus) {
                 },
                 navigationIcon = {
                     if (view != "home") IconButton(onClick = { back() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (tamil) "பின்செல்க" else "Back")
                     } else Icon(Icons.Default.MenuBook, contentDescription = null,
                         modifier = Modifier.padding(horizontal = 14.dp), tint = MaterialTheme.colorScheme.primary)
                 },
@@ -209,7 +209,7 @@ private fun ZoologyApp(data: Syllabus) {
                             prefs.edit().putStringSet("bookmarks", bookmarks.toSet()).apply()
                         }) {
                             Icon(if (chosen.id in bookmarks) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                                contentDescription = "Bookmark")
+                                contentDescription = if (tamil) "புத்தகக்குறி" else "Bookmark")
                         }
                     }
                 },
@@ -267,7 +267,7 @@ private fun ZoologyApp(data: Syllabus) {
 @Composable
 private fun HomeScreen(data: Syllabus, tamil: Boolean, completed: List<String>,
     lastRead: String, onUnit: (Int) -> Unit, onContinue: (String) -> Unit, modifier: Modifier = Modifier) {
-    LazyColumn(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+    LazyColumn(modifier = modifier.testTag("homeScroller").fillMaxSize().background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Column(Modifier.fillMaxWidth().background(Navy, RoundedCornerShape(18.dp)).padding(22.dp)) {
@@ -461,6 +461,7 @@ private fun ChapterScreen(chapter: ChapterEntry, chapterList: List<ChapterEntry>
                         fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(9.dp))
                     NativePlate(plate.filename, description = if (tamil) plate.taTitle else plate.enTitle,
+                        unavailableMessage = if (tamil) "படம் கிடைக்கவில்லை" else "Diagram unavailable",
                         modifier = Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 300.dp))
                     Spacer(Modifier.height(8.dp))
                     Text(if (tamil) plate.taCap else plate.enCap, fontSize = 13.sp)
@@ -540,7 +541,7 @@ private fun NativeRichText(html: String, size: Float) {
 }
 
 @Composable
-private fun NativePlate(file: String, description: String, modifier: Modifier = Modifier) {
+private fun NativePlate(file: String, description: String, unavailableMessage: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val bitmap = remember(file) {
         runCatching { context.assets.open("plates/$file").use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
@@ -550,7 +551,7 @@ private fun NativePlate(file: String, description: String, modifier: Modifier = 
             Image(bitmap = bitmap, contentDescription = description,
                 modifier = Modifier.fillMaxWidth().padding(4.dp), contentScale = ContentScale.Fit)
         } else {
-            Text("Diagram unavailable: $file", color = Color.Red)
+            Text("$unavailableMessage: $file", color = Color.Red)
         }
     }
 }
@@ -570,7 +571,7 @@ private fun PlateDialog(plate: TeachingPlate, tamil: Boolean, onClose: () -> Uni
                     Text(if (tamil) plate.taTitle else plate.enTitle, modifier = Modifier.weight(1f),
                         fontWeight = FontWeight.Bold, fontSize = 17.sp, maxLines = 2)
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Default.Close, contentDescription = "Close image")
+                        Icon(Icons.Default.Close, contentDescription = if (tamil) "படத்தை மூடுக" else "Close image")
                     }
                 }
                 Box(Modifier.fillMaxWidth().weight(1f).background(Color.White)
