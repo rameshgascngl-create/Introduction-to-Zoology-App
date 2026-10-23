@@ -1,0 +1,68 @@
+name: Phase III — Android emulator UI, rotation, Tamil and screenshots
+on:
+  push:
+    branches: [phase3-science-tamil-qa]
+    paths:
+      - 'app/**'
+      - 'tools/validate_content.py'
+      - '.github/workflows/phase3-emulator-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator-ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Install Android 34 test image and build SDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Validate 28 chapters and 62 bilingual keys
+        run: python3 tools/validate_content.py
+      - name: Build UI tests
+        run: gradle --no-daemon :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Run instrumented Compose tests on emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          cores: 2
+          ram-size: 3072M
+          disk-size: 6G
+          disable-animations: true
+          emulator-boot-timeout: 900
+          force-avd-creation: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -no-metrics
+          script: |
+            set -e
+            adb wait-for-device
+            adb shell getprop sys.boot_completed
+            gradle --no-daemon --stacktrace :app:connectedDebugAndroidTest
+            mkdir -p qa-screenshots
+            adb pull /sdcard/Android/data/com.gasczoology.introzoology/files/qa-screenshots/ qa-screenshots/ || true
+            adb shell uiautomator dump /sdcard/window.xml || true
+            adb pull /sdcard/window.xml qa-screenshots/window.xml || true
+            adb logcat -d -t 2000 > emulator-last-logcat.txt || true
+      - name: Save instrumented-test evidence even when emulator fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Introduction-Zoology-P3-Emulator-UI-Evidence
+          path: |
+            app/build/reports/androidTests/**
+            app/build/outputs/androidTest-results/**
+            qa-screenshots/**
+            emulator-last-logcat.txt
+          if-no-files-found: warn
+          retention-days: 30
