@@ -5,6 +5,6 @@
  <g fill="#ffb86b" stroke="#ae6b28" stroke-width="3"><ellipse cx="370" cy="112" rx="42" ry="18"/><ellipse cx="390" cy="235" rx="46" ry="20"/></g>
  <g fill="#f6a6b2"><circle cx="120" cy="205" r="11"/><circle cx="420" cy="175" r="9"/><circle cx="337" cy="285" r="10"/></g>
  <g font-size="13" fill="#233"><text x="222" y="82">Nucleus</text><line x1="250" y1="92" x2="250" y2="108" stroke="#333"/>
- <text x="350" y="74">Mitochondrion</text><line x1="390" y1="88" x2="377" y2="100" stroke="#333"/>
+ <text x="310" y="74">Mitochondrion</text><line x1="390" y1="88" x2="377" y2="100" stroke="#333"/>
  <text x="55" y="115">Endoplasmic reticulum</text><line x1="160" y1="118" x2="183" y2="132" stroke="#333"/>
- <text x="310" y="335">Plasma membrane</text><line x1="428" y1="298" x2="445" y2="275" stroke="#333"/></g></svg>
+ <text x="270" y="333">Plasma membrane</text><line x1="428" y1="298" x2="445" y2="275" stroke="#333"/></g></svg>
