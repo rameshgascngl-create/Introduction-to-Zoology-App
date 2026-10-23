@@ -1,0 +1,70 @@
+name: Build TRUE NATIVE Zoology Android v6
+on:
+  push:
+    branches: ['native-v6.0.0']
+    paths:
+      - 'native/packed_source.txt'
+      - '.github/workflows/native-v6.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Restore self-contained native source and images
+        shell: bash
+        run: |
+          python3 -m pip install --break-system-packages cairosvg
+          python3 - <<'PY'
+          import base64,zlib,json,pathlib,cairosvg
+          root=pathlib.Path('.')
+          packed=root.joinpath('native/packed_source.txt').read_text().strip()
+          sources=json.loads(zlib.decompress(base64.b64decode(packed)))
+          print('Restoring native source:',len(sources),'UTF-8 files')
+          for name,content in sources.items():
+              dest=root/name
+              dest.parent.mkdir(parents=True,exist_ok=True)
+              dest.write_text(content,encoding='utf-8')
+          svgdir=root/'app/src/main/assets/svg'
+          pngdir=root/'app/src/main/assets/plates'
+          pngdir.mkdir(parents=True,exist_ok=True)
+          for svg in sorted(svgdir.glob('*.svg')):
+              cairosvg.svg2png(bytestring=svg.read_bytes(),write_to=str(pngdir/(svg.stem+'.png')),output_width=1500)
+          print('Generated',len(list(pngdir.glob('*.png'))),'Android-native PNG plates')
+          PY
+      - name: Install Android SDK 35
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Validate bilingual native chapter inventory
+        run: python3 tools/validate_content.py
+      - name: Compile Kotlin Jetpack Compose APK
+        run: gradle --no-daemon --stacktrace assembleDebug
+      - name: Verify signed APK
+        shell: bash
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | head -n 15
+          sha256sum "$APK" >native-apk.sha256
+      - name: Upload installable debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Introduction-to-Zoology-TRUE-NATIVE-v6.0.0
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            native-apk.sha256
+          if-no-files-found: error
+          retention-days: 30
