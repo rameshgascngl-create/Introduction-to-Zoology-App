@@ -54,7 +54,8 @@ jobs:
             gradle --no-daemon --stacktrace :app:connectedDebugAndroidTest
             test_status=$?
             mkdir -p qa-screenshots
-            for shot in 01-home-en 02-diagram-fullscreen 03-chapter-tamil 04-bookmark-saved 05-quiz-portrait 06-quiz-landscape 07-all-units-tamil; do
+            adb shell run-as com.gasczoology.introzoology ls -la files/qa-screenshots > qa-screenshots/collection-log.txt 2>&1 || true
+            for shot in 06-quiz-landscape-before-scroll 01-home-en 02-diagram-fullscreen 03-chapter-tamil 04-bookmark-saved 05-quiz-portrait 06-quiz-landscape 07-all-units-tamil; do
               adb exec-out run-as com.gasczoology.introzoology cat "files/qa-screenshots/${shot}.png" > "qa-screenshots/${shot}.png" 2>/dev/null
               if [ "$?" -ne 0 ] || [ ! -s "qa-screenshots/${shot}.png" ]; then
                 rm -f "qa-screenshots/${shot}.png"

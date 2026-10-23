@@ -89,6 +89,7 @@ class NativeReaderSmokeTest {
     @Test fun quizAnswerSurvivesRotation() {
         englishHome()
         rule.onNodeWithTag("navQuiz").performClick()
+        rule.onNodeWithTag("quizScroller").performScrollToNode(hasTestTag("quiz-answer-0-0"))
         rule.onNodeWithTag("quiz-answer-0-0").performClick()
         rule.onNodeWithTag("quiz-answer-0-0").assertIsSelected()
         shot("05-quiz-portrait")
@@ -96,11 +97,14 @@ class NativeReaderSmokeTest {
             it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
         }
         rule.waitForIdle()
+        shot("06-quiz-landscape-before-scroll")
+        rule.onNodeWithTag("quizScroller").performScrollToNode(hasTestTag("quiz-answer-0-0"))
         rule.onNodeWithTag("quiz-answer-0-0").assertIsSelected()
         shot("06-quiz-landscape")
-        // Also verify leaving and returning to the quiz does not clear work.
+        // The answer must also survive leaving and re-entering the quiz.
         rule.onNodeWithTag("navHome").performClick()
         rule.onNodeWithTag("navQuiz").performClick()
+        rule.onNodeWithTag("quizScroller").performScrollToNode(hasTestTag("quiz-answer-0-0"))
         rule.onNodeWithTag("quiz-answer-0-0").assertIsSelected()
     }
 }

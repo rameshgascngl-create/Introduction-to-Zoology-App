@@ -674,8 +674,11 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
                 }
             }
         }
-        LazyColumn(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f).testTag("quizScroller"),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             if (part == "A") {
                 item {
                     Text(if (tamil) "சரியான விடையைத் தேர்வு செய்து மதிப்பெண்ணைக் காண்க."
