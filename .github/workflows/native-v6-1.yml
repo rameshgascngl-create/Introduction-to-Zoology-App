@@ -1,0 +1,87 @@
+name: Introduction to Zoology v6.1 native clean build
+on:
+  push:
+    branches: ['native-v6.1.0']
+    paths:
+      - 'native/v6_1_source_part_*.txt'
+      - '.github/workflows/native-v6-1.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Restore complete v6.1 source and figures
+        shell: bash
+        run: |
+          python3 -m pip install --break-system-packages cairosvg
+          python3 - <<'PY'
+          from pathlib import Path
+          import base64,zlib,json,hashlib,cairosvg
+          parts=sorted(Path('native').glob('v6_1_source_part_*.txt'))
+          assert len(parts)==12, f'Expected 12 source parts, found {len(parts)}'
+          s=''.join(''.join(p.read_text().splitlines()) for p in parts)
+          packed=base64.b64decode(s,validate=True)
+          assert hashlib.sha256(packed).hexdigest()=='ada079f47dbf5a80af8a8d576847ddb03bb1b191b9b0aca304778e89f35649da', 'Source payload digest mismatch'
+          source=json.loads(zlib.decompress(packed))
+          assert len(source['images'])==11
+          print('Restoring',len(source['texts']),'source files and',len(source['images']),'PDF raster figures')
+          for name,content in source['texts'].items():
+              path=Path(name)
+              if path.is_absolute() or '..' in path.parts: raise ValueError('Unsafe source path: '+name)
+              path.parent.mkdir(parents=True,exist_ok=True)
+              path.write_text(content,encoding='utf-8')
+          for name,encoded in source['images'].items():
+              path=Path(name)
+              if path.is_absolute() or '..' in path.parts: raise ValueError('Unsafe image path: '+name)
+              path.parent.mkdir(parents=True,exist_ok=True)
+              path.write_bytes(base64.b64decode(encoded,validate=True))
+          svgdir=Path('app/src/main/assets/svg')
+          pngdir=Path('app/src/main/assets/plates')
+          pngdir.mkdir(parents=True,exist_ok=True)
+          svgs=sorted(svgdir.glob('*.svg'))
+          assert len(svgs)==47, f'Expected 47 SVG masters, found {len(svgs)}'
+          for src in svgs:
+              cairosvg.svg2png(bytestring=src.read_bytes(),write_to=str(pngdir/(src.stem+'.png')),output_width=1500)
+          assert len(list(pngdir.glob('*.png')))==58
+          print('Restored and rendered 58 PNG plates')
+          PY
+      - name: Install Android SDK 35
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Validate 28 bilingual chapters and 58 plates
+        run: python3 tools/validate_content.py
+      - name: Compile clean Kotlin Jetpack Compose APK
+        run: gradle --no-daemon --stacktrace assembleDebug
+      - name: Verify version, package ID, signature and checksum
+        shell: bash
+        run: |
+          APK=app/build/outputs/apk/debug/app-debug.apk
+          test -s "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | tee native-package-info.txt
+          grep -F "name='com.gasczoology.introzoology'" native-package-info.txt
+          grep -F "versionName='6.1.0'" native-package-info.txt
+          sha256sum "$APK" | tee native-v6.1.0.sha256
+      - name: Upload native Android debug APK and verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: Introduction-to-Zoology-NATIVE-v6.1.0-debug
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            native-v6.1.0.sha256
+            native-package-info.txt
+          if-no-files-found: error
+          retention-days: 30
