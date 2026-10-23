@@ -5,18 +5,35 @@ plugins {
 }
 android {
     namespace = "com.gasczoology.introzoology"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         applicationId = "com.gasczoology.introzoology"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 611
-        versionName = "6.1.1-QA"
+        versionCode = 620
+        versionName = "6.2.0-QA"
+    }
+    val signingReady = listOf(
+        "ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD",
+        "ANDROID_KEY_ALIAS", "ANDROID_KEY_PASSWORD"
+    ).all { !System.getenv(it).isNullOrBlank() }
+    if (signingReady) {
+        signingConfigs {
+            create("production") {
+                storeFile = file(System.getenv("ANDROID_KEYSTORE_PATH"))
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS")
+                keyPassword = System.getenv("ANDROID_KEY_PASSWORD")
+            }
+        }
     }
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (signingReady) {
+                signingConfig = signingConfigs.getByName("production")
+            }
         }
     }
     buildFeatures { compose = true }
