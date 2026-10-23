@@ -74,7 +74,7 @@ private data class TeachingPlate(
     val enCap: String, val taCap: String,
     val filename: String, val kind: String
 )
-private data class QuizQuestion(val question: String, val options: List<String>, val answer: Int)
+private data class QuizQuestion(val question: String, val options: List<String>, val answer: Int, val rationale: String)
 private data class QuestionBank(
     val mcqEn: List<QuizQuestion>, val mcqTa: List<QuizQuestion>,
     val shortEn: List<String>, val shortTa: List<String>,
@@ -95,7 +95,7 @@ private data class Syllabus(
             fun questions(j: org.json.JSONArray) = (0 until j.length()).map { i ->
                 val q = j.getJSONObject(i)
                 QuizQuestion(q.getString("q"), readStrings(q.getJSONArray("o")),
-                    q.getString("a").first().uppercaseChar() - 'A')
+                    q.getString("a").first().uppercaseChar() - 'A', q.optString("r", ""))
             }
             val questionBank = (1..5).associateWith { id ->
                 val b = exams.getJSONObject(id.toString())
@@ -189,7 +189,7 @@ private fun ZoologyApp(data: Syllabus) {
                             fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(if (view == "chapter") "${chosen.id}  ·  ${if (tamil) "பாடம்" else "Chapter"}"
                              else if (view == "unit") "${if (tamil) "அலகு" else "Unit"} $currentUnit"
-                             else "Native textbook · v6.1.1 QA", fontSize = 11.sp)
+                             else "Native textbook · v6.1.1 QA", fontSize = 12.sp)
                     }
                 },
                 navigationIcon = {
@@ -460,7 +460,8 @@ private fun ChapterScreen(chapter: ChapterEntry, chapterList: List<ChapterEntry>
                     Text(if (tamil) plate.taTitle else plate.enTitle,
                         fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(9.dp))
-                    NativePlate(plate.filename, modifier = Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 300.dp))
+                    NativePlate(plate.filename, description = if (tamil) plate.taTitle else plate.enTitle,
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 300.dp))
                     Spacer(Modifier.height(8.dp))
                     Text(if (tamil) plate.taCap else plate.enCap, fontSize = 13.sp)
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -539,14 +540,14 @@ private fun NativeRichText(html: String, size: Float) {
 }
 
 @Composable
-private fun NativePlate(file: String, modifier: Modifier = Modifier) {
+private fun NativePlate(file: String, description: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val bitmap = remember(file) {
         runCatching { context.assets.open("plates/$file").use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
     }
     Box(modifier.background(Color(0xFFFAFCFD), RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
         if (bitmap != null) {
-            Image(bitmap = bitmap, contentDescription = file.removeSuffix(".png").replace('_', ' '),
+            Image(bitmap = bitmap, contentDescription = description,
                 modifier = Modifier.fillMaxWidth().padding(4.dp), contentScale = ContentScale.Fit)
         } else {
             Text("Diagram unavailable: $file", color = Color.Red)
@@ -676,8 +677,12 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
                                                 else MaterialTheme.colorScheme.onSurface)
                                 }
                             }
-                            if (submitted) Text("${if (tamil) "சரியான விடை" else "Correct answer"}: ${'A' + q.answer}",
-                                color = Green, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            if (submitted) {
+                                Text("${if (tamil) "சரியான விடை" else "Correct answer"}: ${'A' + q.answer}",
+                                    color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                if (q.rationale.isNotBlank()) Text(q.rationale, modifier = Modifier.padding(top = 5.dp),
+                                    fontSize = 14.sp, lineHeight = 21.sp)
+                            }
                         }
                     }
                 }
