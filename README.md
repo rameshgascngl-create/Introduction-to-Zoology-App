@@ -1,36 +1,36 @@
-# Introduction to Zoology — native Android v6.1.0
+# Introduction to Zoology — Native Android (Phase II)
 
-This is a **native Android Kotlin / Jetpack Compose** reading application (no WebView) with locally bundled learning content, prepared from the 85-page *Introduction to Zoology Unit I to V Notes.pdf* supplied by the user.
+A fully **native Kotlin / Jetpack Compose** offline course reader for the *Introduction to Zoology* foundation course (Department of Zoology, Government Arts and Science College, Nagercoil). It does not use WebView or require Internet access in the app.
 
-## Inventory
+## Directly inspectable Android project
 
-- Five course units and 28 English–Tamil chapters, including the new Unit III chapter 3.5 (Vital Physiological Organ Systems).
-- 58 teaching plates: 38 carried from v6.0.0, 11 directly reused from departmental notes, 6 redrawn to correct unsuitable PDF figures, and 3 new original course schematics.
-- 62 bilingual MCQs, 41 bilingual short answers, and 26 long-answer prompts.
-- Native home, unit browser, chapter reader, search, bookmarking, font adjustment, offline reading, zoomable diagrams, and tests.
-- Each chapter includes reference page range from the uploaded departmental notes.
+Unlike the earlier packed-source v6.1 branch, this branch contains the ordinary Android project: `app/src/main/java`, `app/src/main/assets/content.json`, `app/src/main/assets/plates`, Gradle files, and the static validator. A CI source-export archive is also retained under the Phase II GitHub Actions run.
 
-## Build the native app from source
+**Course inventory:** five units; 28 chapters in English and Tamil; 58 teaching plates; 62 bilingual multiple-choice questions (as of the baseline v6.1 source); 41 short-answer and 26 long-answer prompts per language. Each chapter has source-page references. The unit-by-unit checklist is in `docs/PHASE2_ACADEMIC_QA.md`.
 
-Requires Android Studio, Android SDK 35, Java 17 and Gradle/dependencies available for first-time sync.
+### Build and validate
+
+Requires Java 17, Android SDK 35, Gradle 8.10.2 and Android Gradle Plugin dependencies.
 
 ```bash
 python3 tools/validate_content.py
-gradle assembleDebug
+gradle --no-daemon assembleDebug
 ```
 
-The clean-build output is `app/build/outputs/apk/debug/app-debug.apk`. This **source project has not been compiled in the present container**, where Android SDK and AndroidX build dependencies are unavailable.
+Debug APK: `app/build/outputs/apk/debug/app-debug.apk`.
 
-## Development APK provided separately
+**Two distinct workflows:**
+- `phase2-extract-and-validate.yml` restores the former packaged source and publishes it to the development branch. It must **not** be used to rebuild later content edits, because extraction uses the original v6.1 payload.
+- `phase2-native-build.yml` builds the **current ordinary checked-in project**; this is the authoritative CI path for subsequent Phase II changes.
 
-The distributed `Introduction_to_Zoology_v6.1.0_NATIVE_CONTENT_DEVELOPMENT.apk` was constructed by replacing **only JSON/textbook assets, PNG diagrams and version metadata** in the already compiled native 6.0.0 APK, then signing with a new development certificate (APK Signature Scheme v2). It is native, but it is not proof of a clean 6.1.0 Kotlin/Gradle build.
+The source-extraction workflow completed successfully on 23 October 2026 (run 39936309835), demonstrating Kotlin compilation, structural content validation, package metadata verification and creation of an installable **debug** APK. A debug APK is not a production-signed release.
 
-This development certificate **is different from prior builds**. Android will reject in-place upgrades across signing identities. Device installation and visual interaction checks are still required.
+### Chapter-level academic audit
 
-### Academic and image safety notes
+The basis is the supplied 85-page *Introduction to Zoology Unit I to V Notes.pdf*, including the formal five-unit syllabus on PDF page 3. The original v6.1 lesson inventory structurally covers the listed units; the Phase II editorial correction explicitly adds the missing **habitat, microhabitat and ecological-niche** explanation in Unit IV, Chapter 4.2, in both languages.
 
-The user-provided PDF is the primary source for learning content. Its p.17 echinoderm-symmetry table, p.28 monohybrid diagram and several other figures have identifiable errors and are not reproduced without correction. Six questionable/unsuitable PDF illustrations were replaced by new original SVG teaching plates, notably the original p.57 figure that shows a copyright notice. Eleven further figures were reused with page provenance; production redistribution rights need independent assessment. The earlier 38 figures were retained but are not globally certified as anatomically correct.
+Structural checks cannot prove that every diagram is anatomically correct or that every Tamil formulation is editorially polished. The 58 plates are present and have distinct file hashes, but **physical-device rendering, magnification, font clipping, copyright provenance and scientific figure review are not yet completed**. Eleven images reused from the departmental reference notes require rights verification before public redistribution. Earlier generated diagrams likewise require figure-by-figure inspection.
 
-The attached PDF lists Lac Culture in its formal syllabus but has no detailed explanatory section on this topic. The new lac explanation is distinctly supplemented using ICAR-IINRG research and extension materials. Additional scientific correctness checks draw on ICZN and OpenStax, while preserving the syllabus sequence.
+The GitHub Actions artifacts are development and QA outputs, not a production release. Signing key management, Play Store distribution and device testing are separate release gates.
 
-See `tools/validate_content.py`, `tools/upgrade_6_1.py`, `tools/create_precise_schematics.py`, `tools/replace_faulty_reference_figures.py` and the separate audit report. The upgrade scripts reference the uploaded source PDF on its original container path; the generated assets and content JSON are already present in this ZIP and do not require rerunning those scripts.
+See `tools/validate_content.py`, `native/PHASE2_SOURCE_MANIFEST.json` and `docs/PHASE2_ACADEMIC_QA.md` for the auditable inventory and acceptance criteria.
