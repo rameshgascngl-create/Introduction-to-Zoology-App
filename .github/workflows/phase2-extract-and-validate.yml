@@ -79,6 +79,21 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
       - name: Validate 28 bilingual chapters and 58 plates
         run: python3 tools/validate_content.py
+      - name: Publish inspectable native Android source to Phase II branch
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f --pathspec-from-file=native/.phase2_git_add_paths --pathspec-file-nul
+          # The CI token has contents:write but not permission to alter workflow files.
+          # Keep the bundled build-native.yml in the source ZIP, not in this git push.
+          git restore --staged -- .github/workflows
+          if git diff --cached --quiet; then
+            echo "Conventional source already committed"
+          else
+            git commit -m "Extract verified 6.1.0 Kotlin Compose source, bilingual content and 58 teaching plates"
+            git push origin HEAD:phase2-native-source
+          fi
       - name: Compile clean Kotlin Jetpack Compose APK
         run: gradle --no-daemon --stacktrace assembleDebug
       - name: Verify version, package ID, signature and checksum
@@ -102,18 +117,6 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
-      - name: Publish inspectable native Android source to Phase II branch
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -f --pathspec-from-file=native/.phase2_git_add_paths --pathspec-file-nul
-          if git diff --cached --quiet; then
-            echo "Conventional source already committed"
-          else
-            git commit -m "Extract verified 6.1.0 Kotlin Compose source, bilingual content and 58 teaching plates"
-            git push origin HEAD:phase2-native-source
-          fi
       - name: Upload normal Android source archive
         uses: actions/upload-artifact@v4
         with:
