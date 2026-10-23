@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" role="img" aria-label="Energy pyramid"><style>.svg-title{font-family:sans-serif;font-size:15px;font-weight:bold;fill:#1d4435}</style>
  <polygon points="75,315 445,315 390,250 130,250" fill="#63c174"/><polygon points="130,245 390,245 345,180 175,180" fill="#ffd166"/><polygon points="175,175 345,175 310,110 210,110" fill="#ff9f68"/><polygon points="210,105 310,105 275,40 245,40" fill="#ec6a6a"/>
- <g text-anchor="middle" font-size="16" font-weight="700"><text x="260" y="290">Producers</text><text x="260" y="220">Primary consumers</text><text x="260" y="151">Secondary consumers</text><text x="260" y="82">Top consumers</text></g>
+ <g text-anchor="middle" font-size="12" font-weight="700"><text x="260" y="290">Producers</text><text x="260" y="220">Primary consumers</text><text x="260" y="151">Secondary consumers</text><text x="260" y="82">Top consumers</text></g>
  <path d="M45 310 C20 210 20 120 70 55" fill="none" stroke="#ffb000" stroke-width="7" marker-end="url(#arr)"/>
  <defs><marker id="arr" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#ffb000"/></marker></defs><text x="20" y="190" transform="rotate(-90 20 190)" font-size="14">Energy transfer</text></svg>
