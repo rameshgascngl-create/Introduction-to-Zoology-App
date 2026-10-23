@@ -46,12 +46,12 @@ for plate in d['plates']:
     image=(a/'plates'/plate['filename'])
     with image.open('rb') as handle:
         header=handle.read(24)
-    assert header[:8]==b'\\x89PNG\\r\\n\\x1a\\n',(plate['id'],'not PNG')
+    assert header[:8]==b'\x89PNG\r\n\x1a\n',(plate['id'],'not PNG')
     width,height=struct.unpack('>II',header[16:24])
     assert width>=300 and height>=100,(plate['id'],'unreadably small',width,height)
     plate_hashes.append(hashlib.sha256(image.read_bytes()).hexdigest())
 assert len(set(plate_hashes))==58,'Some teaching plates contain identical pixels'
-assert all(re.search(r'[\\u0B80-\\u0BFF]', c['contentTa']) for c in d['chapters']), 'Tamil body text missing'
+assert all(re.search(r'[\u0B80-\u0BFF]', c['contentTa']) for c in d['chapters']), 'Tamil body text missing'
 
 for bank in d['questionBank'].values():
     assert len(bank['mcqEn'])==len(bank['mcqTa'])
