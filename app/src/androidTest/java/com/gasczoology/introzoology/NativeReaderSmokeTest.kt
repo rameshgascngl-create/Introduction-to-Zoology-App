@@ -98,5 +98,9 @@ class NativeReaderSmokeTest {
         rule.waitForIdle()
         rule.onNodeWithTag("quiz-answer-0-0").assertIsSelected()
         shot("06-quiz-landscape")
+        // Also verify leaving and returning to the quiz does not clear work.
+        rule.onNodeWithTag("navHome").performClick()
+        rule.onNodeWithTag("navQuiz").performClick()
+        rule.onNodeWithTag("quiz-answer-0-0").assertIsSelected()
     }
 }
