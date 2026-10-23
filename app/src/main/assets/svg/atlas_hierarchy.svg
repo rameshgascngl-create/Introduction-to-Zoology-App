@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" role="img" aria-label="Taxonomic hierarchy diagram"><style>.svg-title{font-family:sans-serif;font-size:15px;font-weight:bold;fill:#1d4435}</style>
+ <defs><linearGradient id="g1" x1="0" x2="1"><stop stop-color="#74b9ff"/><stop offset="1" stop-color="#5f7cff"/></linearGradient></defs>
+ <rect x="20" y="24" width="480" height="42" rx="14" fill="url(#g1)"/><text x="260" y="51" text-anchor="middle" fill="white" font-size="18" font-weight="700">Kingdom</text>
+ <g font-size="16" font-weight="700" text-anchor="middle">
+ <rect x="55" y="80" width="410" height="38" rx="12" fill="#8bd3c7"/><text x="260" y="105">Phylum</text>
+ <rect x="85" y="132" width="350" height="38" rx="12" fill="#ffd166"/><text x="260" y="157">Class</text>
+ <rect x="115" y="184" width="290" height="38" rx="12" fill="#f6a6b2"/><text x="260" y="209">Order</text>
+ <rect x="145" y="236" width="230" height="38" rx="12" fill="#c8b6ff"/><text x="260" y="261">Family</text>
+ <rect x="175" y="288" width="170" height="30" rx="10" fill="#a7e8a1"/><text x="260" y="309">Genus</text>
+ <rect x="205" y="328" width="110" height="26" rx="9" fill="#ffb86b"/><text x="260" y="347" font-size="14">Species</text></g></svg>

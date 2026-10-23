@@ -1,0 +1,61 @@
+name: Introduction to Zoology Phase II — Emulator UI and state QA
+on:
+  push:
+    branches: [phase2-native-source]
+    paths:
+      - 'app/**'
+      - '.github/workflows/phase2-emulator-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  emulator-qa:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Prepare Android SDK 35
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Check textbook content
+        run: python3 tools/validate_content.py
+      - name: Compile native app and Android UI test APK
+        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Boot emulator and execute Compose instrumented tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_4
+          disable-animations: true
+          emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot
+          script: |
+            set +e
+            gradle --no-daemon :app:connectedDebugAndroidTest
+            result=$?
+            mkdir -p qa-screenshots
+            adb pull /sdcard/Android/data/com.gasczoology.introzoology/files/qa-screenshots/ qa-screenshots/ || true
+            adb logcat -d -t 3000 > emulator-last-logcat.txt || true
+            exit "$result"
+      - name: Upload tests, screenshots and emulator log even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Introduction-Zoology-PhaseII-Emulator-QA
+          path: |
+            app/build/reports/androidTests/**
+            app/build/outputs/androidTest-results/**
+            qa-screenshots/**
+            emulator-last-logcat.txt
+          if-no-files-found: warn
+          retention-days: 30

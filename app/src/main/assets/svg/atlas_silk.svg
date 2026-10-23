@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 360" role="img" aria-label="Silkworm life cycle"><style>.svg-title{font-family:sans-serif;font-size:15px;font-weight:bold;fill:#1d4435}</style>
+ <defs><marker id="a3" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0 0 L0 6 L8 3z" fill="#608070"/></marker></defs>
+ <circle cx="260" cy="180" r="125" fill="none" stroke="#90b8a0" stroke-width="5" stroke-dasharray="8 8"/>
+ <g stroke="#608070" stroke-width="3" marker-end="url(#a3)"><path d="M260 55 Q390 85 385 180" fill="none"/><path d="M385 180 Q365 300 260 305" fill="none"/><path d="M260 305 Q120 290 135 180" fill="none"/><path d="M135 180 Q150 70 260 55" fill="none"/></g>
+ <g fill="#f4e7bb" stroke="#8a7a4f" stroke-width="2"><circle cx="260" cy="55" r="9"/><circle cx="274" cy="52" r="8"/><circle cx="248" cy="48" r="7"/></g>
+ <path d="M360 160 q35-25 50 0 q-15 25-50 0" fill="#b7e3a1" stroke="#58744d" stroke-width="3"/>
+ <ellipse cx="260" cy="305" rx="28" ry="42" fill="#e8c894" stroke="#9d6c35" stroke-width="3"/>
+ <path d="M125 180 q20-35 40 0 q20-35 40 0" fill="none" stroke="#6d6d6d" stroke-width="9" stroke-linecap="round"/>
+ <g font-size="13" text-anchor="middle"><text x="260" y="25">Egg</text><text x="405" y="145">Larva</text><text x="260" y="355">Cocoon / pupa</text><text x="105" y="145">Adult moth</text></g></svg>
