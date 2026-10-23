@@ -19,8 +19,13 @@ class NativeReaderSmokeTest {
     private fun shot(label: String) {
         rule.waitForIdle()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        val dir = File(context.getExternalFilesDir(null), "qa-screenshots")
-        dir.mkdirs()
+        // External storage can be unavailable while an emulator is booting.
+        // Always write to the app's internal files directory, then collect
+        // the screenshots with "adb exec-out run-as" from the debug build.
+        val dir = File(context.filesDir, "qa-screenshots")
+        check(dir.isDirectory || dir.mkdirs()) {
+            "Cannot create screenshot folder: ${dir.absolutePath}"
+        }
         val bmp = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
         if (bmp != null) {
             FileOutputStream(File(dir, "$label.png")).use { out ->
