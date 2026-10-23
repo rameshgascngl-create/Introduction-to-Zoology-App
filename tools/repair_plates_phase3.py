@@ -66,9 +66,58 @@ if '<!-- P3 verified two-box layout -->' not in s:
  </svg>'''
     name.write_text(s,encoding="utf-8")
 
+
+# Refine four more flawed existing scientific plates without changing lesson IDs.
+swap("original_orig5.svg",
+     '<text x="392" y="210" font-size="9.5" fill="#7a3b8c" font-weight="bold">4. Post-anal tail</text><text x="392" y="221" font-size="8" fill="#5a4e42">(beyond anus, marked •)</text>',
+     '<text x="363" y="205" font-size="8.5" fill="#7a3b8c" font-weight="bold">4. Post-anal tail</text><text x="363" y="215" font-size="7" fill="#5a4e42">(extends past anus)</text>')
+swap("original_orig6.svg",
+     '<text x="395" y="95" font-size="9.5" fill="#2e6b4f" font-weight="bold">Flagellum</text>',
+     '<text x="386" y="145" font-size="8.5" fill="#2e6b4f" font-weight="bold">Flagellum</text>')
+swap("original_orig15.svg",
+     '<line x1="100" y1="188" x2="390" y2="188" stroke="#8f3f0b" stroke-width="1.6" stroke-dasharray="4,3"/>',
+     '<line x1="100" y1="197" x2="390" y2="197" stroke="#8f3f0b" stroke-width="1.6" stroke-dasharray="4,3"/>')
+swap("original_orig15.svg",
+     '<text x="398" y="192" font-size="8" fill="#8f3f0b">Ozone concentration</text><text x="398" y="203" font-size="8" fill="#8f3f0b">(within stratosphere)</text>',
+     '<text x="395" y="177" font-size="8" fill="#8f3f0b">Ozone-rich</text><text x="395" y="189" font-size="8" fill="#8f3f0b">stratosphere</text>')
+swap("atlas_cell.svg",'<text x="386" y="82">Mitochondrion</text>',
+     '<text x="350" y="74">Mitochondrion</text>')
+swap("atlas_cell.svg",'<text x="401" y="315">Plasma membrane</text>',
+     '<text x="310" y="335">Plasma membrane</text>')
+swap("atlas_ecosystem.svg",'text-anchor="middle" font-size="16" font-weight="700"',
+     'text-anchor="middle" font-size="12" font-weight="700"')
+# Replace oversimplified lipid hierarchy with molecule-class distinctions; preserve filename.
+lipid_svg=SVG/"notes_p40.svg"
+if not lipid_svg.exists():
+    lipid_svg.write_text('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 600" role="img" aria-label="Major lipid classes with chemically distinct examples">
+<rect width="1000" height="600" fill="#F6FBF9"/><text x="500" y="65" text-anchor="middle" font-size="43" font-family="sans-serif" font-weight="bold" fill="#153F4B">LIPID CLASSES AND FUNCTION</text>
+<text x="500" y="100" text-anchor="middle" font-size="23" font-family="sans-serif" fill="#4C6171">Structural classes are not the same as their component molecules</text>
+<g font-family="sans-serif" fill="#194A41"><rect x="40" y="155" width="440" height="145" rx="18" fill="#E5F3EA" stroke="#24715C" stroke-width="3"/><text x="260" y="202" text-anchor="middle" font-size="30" font-weight="bold">Triacylglycerols</text><text x="260" y="240" text-anchor="middle" font-size="23">Glycerol + 3 fatty acids</text><text x="260" y="271" text-anchor="middle" font-size="20">Long-term energy storage</text>
+<rect x="520" y="155" width="440" height="145" rx="18" fill="#E7F0FA" stroke="#2E6287" stroke-width="3"/><text x="740" y="202" text-anchor="middle" font-size="30" font-weight="bold">Phospholipids</text><text x="740" y="240" text-anchor="middle" font-size="22">Polar head + hydrophobic tails</text><text x="740" y="271" text-anchor="middle" font-size="20">Membrane organisation</text>
+<rect x="40" y="330" width="440" height="145" rx="18" fill="#FFF1DE" stroke="#A36B2A" stroke-width="3"/><text x="260" y="377" text-anchor="middle" font-size="30" font-weight="bold">Waxes</text><text x="260" y="415" text-anchor="middle" font-size="23">Long-chain fatty acid esters</text><text x="260" y="446" text-anchor="middle" font-size="20">Protective waterproof coatings</text>
+<rect x="520" y="330" width="440" height="145" rx="18" fill="#F4E6F4" stroke="#885099" stroke-width="3"/><text x="740" y="377" text-anchor="middle" font-size="30" font-weight="bold">Sterols and steroids</text><text x="740" y="415" text-anchor="middle" font-size="23">Four fused carbon rings</text><text x="740" y="446" text-anchor="middle" font-size="20">Membranes and signalling</text></g>
+<text x="500" y="541" text-anchor="middle" font-size="20" font-family="sans-serif" fill="#5A4E42">Fatty acids are constituents of many lipids, not a subgroup of triacylglycerols.</text>
+</svg>''',encoding="utf-8")
+# Replace the misleading figure with a straightforward vermicomposting operations flow.
+vermi_svg=SVG/"original_orig22.svg"
+data=vermi_svg.read_text(encoding="utf-8")
+if '<!-- P3 corrected vermi chart -->' not in data:
+    vermi_svg.write_text('''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 580" role="img" aria-label="Correct sequence of vermicomposting operations">
+<rect x="8" y="8" width="984" height="564" rx="25" fill="#fffdf8" stroke="#c8d4cb" stroke-width="3"/>
+<text x="500" y="62" text-anchor="middle" font-size="38" font-family="sans-serif" font-weight="bold" fill="#174A49">VERMICOMPOSTING OPERATIONS</text>
+<text x="500" y="101" text-anchor="middle" font-size="23" font-family="sans-serif" fill="#526571">Feedstock management → worm processing → mature amendment</text>
+<!-- P3 corrected vermi chart -->
+<defs><marker id="a" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" stroke="#256B53" stroke-width="2" fill="none"/></marker></defs>
+<g font-family="sans-serif" text-anchor="middle"><g fill="#e7f3e8" stroke="#2c755d" stroke-width="3"><rect x="45" y="170" rx="14" width="270" height="145"/><rect x="365" y="170" rx="14" width="270" height="145"/><rect x="685" y="170" rx="14" width="270" height="145"/><rect x="45" y="350" rx="14" width="270" height="135"/><rect x="365" y="350" rx="14" width="270" height="135"/><rect x="685" y="350" rx="14" width="270" height="135"/></g>
+<g fill="#153f2e" font-size="25" font-weight="bold"><text x="180" y="218">1. Feedstock</text><text x="500" y="218">2. Prepare bed</text><text x="820" y="218">3. Add worms</text><text x="180" y="396">6. Soil use</text><text x="500" y="396">5. Cure and test</text><text x="820" y="396">4. Process</text></g>
+<g fill="#39585b" font-size="20"><text x="180" y="263">Select safe organics</text><text x="500" y="263">Moisture + aeration</text><text x="820" y="263">Suitable epigeic species</text><text x="180" y="442">Apply mature compost</text><text x="500" y="442">Assess quality</text><text x="820" y="442">Feed + microbial action</text></g></g>
+<g stroke="#256B53" stroke-width="4" fill="none" marker-end="url(#a)"><path d="M318 242 L358 242"/><path d="M638 242 L678 242"/><path d="M820 320 L820 343"/><path d="M680 417 L642 417"/><path d="M360 417 L320 417"/></g>
+<text x="500" y="535" text-anchor="middle" font-size="20" font-family="sans-serif" fill="#8b254a">Maintain temperature, moisture, aeration and suitable feedstock; test the mature product.</text>
+</svg>''',encoding="utf-8")
+
 targets=[
 "original_orig2","original_orig10","original_orig14","original_orig16","original_orig17","native_lac",
-"notes_p57","notes_p58",
+"notes_p57","notes_p58","notes_p40","original_orig5","original_orig6","original_orig15","original_orig22","atlas_cell","atlas_ecosystem",
 "supplement_systflow","supplement_celltheory","supplement_darwinselection","supplement_silkworm",
 "supplement_poultrybio","supplement_dairyhygiene","supplement_molecular","supplement_ecotourism"
 ]
