@@ -68,6 +68,19 @@ class NativeReaderSmokeTest {
         shot("04-bookmark-saved")
     }
 
+    @Test fun fiveSyllabusUnitsNavigateAndTamilIsAccessible() {
+        englishHome()
+        for (unit in 1..5) {
+            rule.onNodeWithTag("homeScroller").performScrollToNode(hasTestTag("unit-$unit"))
+            rule.onNodeWithTag("unit-$unit").performClick()
+            rule.onNodeWithTag("chapter-$unit.1").assertExists()
+            rule.onNodeWithTag("navHome").performClick()
+        }
+        rule.onNodeWithTag("languageToggle").performClick()
+        rule.onNodeWithText("விலங்கியல் அறிமுகம்").assertExists()
+        shot("07-all-units-tamil")
+    }
+
     @Test fun quizAnswerSurvivesRotation() {
         englishHome()
         rule.onNodeWithTag("navQuiz").performClick()
