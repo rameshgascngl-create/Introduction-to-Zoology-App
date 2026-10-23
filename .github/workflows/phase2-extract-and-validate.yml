@@ -53,7 +53,8 @@ jobs:
           for src in svgs:
               cairosvg.svg2png(bytestring=src.read_bytes(),write_to=str(pngdir/(src.stem+'.png')),output_width=1500)
           assert len(list(pngdir.glob('*.png')))==58
-          print('Restored and rendered 58 PNG plates')          rendered=[str(p) for p in sorted(pngdir.glob('*.png')) if p.stem in {s.stem for s in svgs}]
+          print('Restored and rendered 58 PNG plates')
+          rendered=[str(p) for p in sorted(pngdir.glob('*.png')) if p.stem in {s.stem for s in svgs}]
           manifest={
               'source_commit':'54f4ae1d6f0972e5e2916ca767edf59acf50a98b',
               'original_text_paths': sorted(source['texts']),
