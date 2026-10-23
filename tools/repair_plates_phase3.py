@@ -115,6 +115,49 @@ if '<!-- P3 corrected vermi chart -->' not in data:
 <text x="500" y="535" text-anchor="middle" font-size="20" font-family="sans-serif" fill="#8b254a">Maintain temperature, moisture, aeration and suitable feedstock; test the mature product.</text>
 </svg>''',encoding="utf-8")
 
+
+# Final typography pass: prevent layout overflow and keep Tamil captions within cards.
+swap("original_orig15.svg",
+    '<text x="245" y="257" text-anchor="middle" font-size="8.5" fill="#5a4e42">',
+    '<text x="245" y="251" text-anchor="middle" font-size="8.5" fill="#5a4e42">')
+swap("original_orig15.svg",
+    '<text x="245" y="268" text-anchor="middle" font-size="8" fill="#8a1e3c">',
+    '<text x="245" y="263" text-anchor="middle" font-size="8" fill="#8a1e3c">')
+swap("atlas_cell.svg",
+    '<text x="350" y="74">Mitochondrion</text>',
+    '<text x="310" y="74">Mitochondrion</text>')
+swap("atlas_cell.svg",
+    '<text x="310" y="335">Plasma membrane</text>',
+    '<text x="270" y="333">Plasma membrane</text>')
+def replace_once(name, old, new):
+    p=SVG/name
+    st=p.read_text(encoding="utf-8")
+    if old in st:
+        p.write_text(st.replace(old,new),encoding="utf-8")
+    elif new not in st:
+        raise ValueError(f"Cannot locate {name} text {old[:30]}")
+replace_once("supplement_poultrybio.svg",
+    'textLength="116" lengthAdjust="spacingAndGlyphs">ஆரோக்கியக் குஞ்சுகள்</text>',
+    '>ஆரோக்கியக் குஞ்சுகள்</text>') if False else None
+# Long bilingual card strings require two short lines, not ignored SVG textLength.
+for file, changes in {
+    "supplement_poultrybio.svg":[
+        ("ஆரோக்கியக் குஞ்சுகள்","ஆரோக்கியக்"),
+        ("காற்றோட்டம் + இடவசதி","காற்றோட்டம் + இடம்")],
+    "supplement_dairyhygiene.svg":[
+        ("ஆரோக்கியமான மடி","மடிநலம்"),
+        ("சுத்தமான பால் கறத்தல்","சுத்தமான கறத்தல்"),
+        ("விரைவு குளிரூட்டல்","விரைவுக் குளிரூட்டல்")]
+}.items():
+    p=SVG/file
+    st=p.read_text(encoding="utf-8")
+    for old,new in changes:
+        st=st.replace(old,new)
+    import re
+    st=re.sub(r'font-size="12" font-weight="400" fill="#465662" text-anchor="middle"(?: textLength="116" lengthAdjust="spacingAndGlyphs")?>',
+              'font-size="9" font-weight="400" fill="#465662" text-anchor="middle">',st)
+    p.write_text(st,encoding="utf-8")
+
 targets=[
 "original_orig2","original_orig10","original_orig14","original_orig16","original_orig17","native_lac",
 "notes_p57","notes_p58","notes_p40","original_orig5","original_orig6","original_orig15","original_orig22","atlas_cell","atlas_ecosystem",
