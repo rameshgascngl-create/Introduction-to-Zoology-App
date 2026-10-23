@@ -66,5 +66,7 @@ jobs:
           git add app/src/main/assets/svg/ app/src/main/assets/plates/
           if ! git diff --cached --quiet; then
             git commit -m 'Render Tamil legibly; correct biology flow, meiosis, vitamins and nomenclature plates'
+            git fetch origin phase3-science-tamil-qa
+            git rebase origin/phase3-science-tamil-qa
             git push origin HEAD:phase3-science-tamil-qa
           fi
