@@ -81,9 +81,9 @@ swap("original_orig15.svg",
      '<text x="398" y="192" font-size="8" fill="#8f3f0b">Ozone concentration</text><text x="398" y="203" font-size="8" fill="#8f3f0b">(within stratosphere)</text>',
      '<text x="395" y="177" font-size="8" fill="#8f3f0b">Ozone-rich</text><text x="395" y="189" font-size="8" fill="#8f3f0b">stratosphere</text>')
 swap("atlas_cell.svg",'<text x="386" y="82">Mitochondrion</text>',
-     '<text x="350" y="74">Mitochondrion</text>')
+     '<text x="310" y="74">Mitochondrion</text>')
 swap("atlas_cell.svg",'<text x="401" y="315">Plasma membrane</text>',
-     '<text x="310" y="335">Plasma membrane</text>')
+     '<text x="270" y="333">Plasma membrane</text>')
 swap("atlas_ecosystem.svg",'text-anchor="middle" font-size="16" font-weight="700"',
      'text-anchor="middle" font-size="12" font-weight="700"')
 # Replace oversimplified lipid hierarchy with molecule-class distinctions; preserve filename.
