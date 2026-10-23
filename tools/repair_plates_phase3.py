@@ -80,7 +80,7 @@ for stem in targets:
     path=SVG/(stem+".svg")
     ET.parse(path)
     out=PNG/(stem+".png")
-    subprocess.run(["rsvg-convert","--keep-aspect-ratio","-o",str(out),str(path)],check=True)
+    subprocess.run(["rsvg-convert","--width","1500","-o",str(out),str(path)],check=True)
     with Image.open(out) as im:
         im.verify()
     with Image.open(out) as im:
