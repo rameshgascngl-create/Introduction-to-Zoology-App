@@ -10,8 +10,9 @@ android {
         applicationId = "com.gasczoology.introzoology"
         minSdk = 24
         targetSdk = 35
-        versionCode = 610
-        versionName = "6.1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        versionCode = 611
+        versionName = "6.1.1-QA"
     }
     buildTypes {
         release {
@@ -39,4 +40,9 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.9.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    androidTestImplementation(composeBom)
+    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
 }

@@ -28,6 +28,8 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.mapSaver
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -187,7 +189,7 @@ private fun ZoologyApp(data: Syllabus) {
                             fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(if (view == "chapter") "${chosen.id}  ·  ${if (tamil) "பாடம்" else "Chapter"}"
                              else if (view == "unit") "${if (tamil) "அலகு" else "Unit"} $currentUnit"
-                             else "Native textbook · v6.1.0", fontSize = 11.sp)
+                             else "Native textbook · v6.1.1 QA", fontSize = 11.sp)
                     }
                 },
                 navigationIcon = {
@@ -197,12 +199,12 @@ private fun ZoologyApp(data: Syllabus) {
                         modifier = Modifier.padding(horizontal = 14.dp), tint = MaterialTheme.colorScheme.primary)
                 },
                 actions = {
-                    TextButton(onClick = {
+                    TextButton(modifier = Modifier.testTag("languageToggle"), onClick = {
                         tamil = !tamil
                         prefs.edit().putBoolean("tamil", tamil).apply()
                     }) { Text(if (tamil) "EN" else "தமிழ்", fontWeight = FontWeight.Bold) }
                     if (view == "chapter") {
-                        IconButton(onClick = {
+                        IconButton(modifier = Modifier.testTag("bookmarkToggle"), onClick = {
                             if (chosen.id in bookmarks) bookmarks.remove(chosen.id) else bookmarks.add(chosen.id)
                             prefs.edit().putStringSet("bookmarks", bookmarks.toSet()).apply()
                         }) {
@@ -217,15 +219,19 @@ private fun ZoologyApp(data: Syllabus) {
         bottomBar = {
             if (view != "chapter") NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
                 NavigationBarItem(selected = view == "home" || view == "unit", onClick = { view = "home" },
+                    modifier = Modifier.testTag("navHome"),
                     icon = { Icon(Icons.Default.Home, contentDescription = null) },
                     label = { Text(if (tamil) "முகப்பு" else "Home") })
                 NavigationBarItem(selected = view == "search", onClick = { view = "search" },
+                    modifier = Modifier.testTag("navSearch"),
                     icon = { Icon(Icons.Default.Search, contentDescription = null) },
                     label = { Text(if (tamil) "தேடல்" else "Search") })
                 NavigationBarItem(selected = view == "bookmarks", onClick = { view = "bookmarks" },
+                    modifier = Modifier.testTag("navSaved"),
                     icon = { Icon(Icons.Default.Bookmarks, contentDescription = null) },
                     label = { Text(if (tamil) "சேமித்தவை" else "Saved") })
                 NavigationBarItem(selected = view == "quiz", onClick = { view = "quiz" },
+                    modifier = Modifier.testTag("navQuiz"),
                     icon = { Icon(Icons.Default.Quiz, contentDescription = null) },
                     label = { Text(if (tamil) "வினாக்கள்" else "Tests") })
             }
@@ -292,7 +298,7 @@ private fun HomeScreen(data: Syllabus, tamil: Boolean, completed: List<String>,
         items(data.units, key = { it.id }) { u ->
             val count = data.chapters.count { it.unit == u.id }
             val done = data.chapters.count { it.unit == u.id && it.id in completed }
-            Card(onClick = { onUnit(u.id) }, shape = RoundedCornerShape(14.dp)) {
+            Card(onClick = { onUnit(u.id) }, modifier = Modifier.testTag("unit-${u.id}"), shape = RoundedCornerShape(14.dp)) {
                 Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = RoundedCornerShape(12.dp)) {
@@ -344,7 +350,7 @@ private fun UnitScreen(unit: UnitEntry, chapters: List<ChapterEntry>, tamil: Boo
 @Composable
 private fun ChapterTile(chapter: ChapterEntry, tamil: Boolean, done: Boolean, saved: Boolean,
     onClick: () -> Unit) {
-    Card(onClick = onClick, shape = RoundedCornerShape(12.dp)) {
+    Card(onClick = onClick, modifier = Modifier.testTag("chapter-${chapter.id}"), shape = RoundedCornerShape(12.dp)) {
         Row(Modifier.fillMaxWidth().padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
                 Text("${if (tamil) "பாடம்" else "CHAPTER"} ${chapter.id}",
@@ -411,7 +417,7 @@ private fun ChapterScreen(chapter: ChapterEntry, chapterList: List<ChapterEntry>
     onTextSize: (Float) -> Unit, onCompleted: (Boolean) -> Unit,
     onChapter: (ChapterEntry) -> Unit, modifier: Modifier = Modifier) {
     var expanded by remember(chapter.id) { mutableStateOf<TeachingPlate?>(null) }
-    LazyColumn(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+    LazyColumn(modifier = modifier.testTag("chapterScroller").fillMaxSize().background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 26.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item(key = "heading") {
@@ -449,7 +455,7 @@ private fun ChapterScreen(chapter: ChapterEntry, chapterList: List<ChapterEntry>
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         items(diagrams, key = { "plate-${it.id}" }) { plate ->
-            Card(onClick = { expanded = plate }, shape = RoundedCornerShape(14.dp)) {
+            Card(onClick = { expanded = plate }, modifier = Modifier.testTag("plate-${plate.id}"), shape = RoundedCornerShape(14.dp)) {
                 Column(Modifier.fillMaxWidth().padding(12.dp)) {
                     Text(if (tamil) plate.taTitle else plate.enTitle,
                         fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
@@ -477,7 +483,8 @@ private fun ChapterScreen(chapter: ChapterEntry, chapterList: List<ChapterEntry>
             ElevatedCard {
                 Row(Modifier.fillMaxWidth().clickable { onCompleted(!completed) }.padding(18.dp),
                     verticalAlignment = Alignment.CenterVertically) {
-                    Checkbox(checked = completed, onCheckedChange = { onCompleted(it) })
+                    Checkbox(checked = completed, onCheckedChange = { onCompleted(it) },
+                        modifier = Modifier.testTag("completionToggle"))
                     Spacer(Modifier.width(8.dp))
                     Text(if (tamil) "இந்தப் பாடத்தை முடித்துவிட்டேன்" else "Mark this chapter as completed",
                         modifier = Modifier.weight(1f), fontWeight = FontWeight.SemiBold)
@@ -556,7 +563,7 @@ private fun PlateDialog(plate: TeachingPlate, tamil: Boolean, onClose: () -> Uni
         runCatching { context.assets.open("plates/${plate.filename}").use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
     }
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+        Surface(modifier = Modifier.fillMaxSize().testTag("plateDialog"), color = MaterialTheme.colorScheme.surface) {
             Column {
                 Row(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                     Text(if (tamil) plate.taTitle else plate.enTitle, modifier = Modifier.weight(1f),
@@ -607,7 +614,16 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
     onUnit: (Int) -> Unit, modifier: Modifier = Modifier) {
     var part by rememberSaveable { mutableStateOf("A") }
     var submitted by rememberSaveable(selectedUnit, part) { mutableStateOf(false) }
-    val answers = remember(selectedUnit, part) { mutableStateMapOf<Int, Int>() }
+    val answers = rememberSaveable(selectedUnit, part, saver = mapSaver(
+        save = { choices: androidx.compose.runtime.snapshots.SnapshotStateMap<Int, Int> ->
+            choices.mapKeys { it.key.toString() }
+        },
+        restore = { saved ->
+            mutableStateMapOf<Int, Int>().apply {
+                saved.forEach { (key, value) -> this[key.toInt()] = value as Int }
+            }
+        }
+    )) { mutableStateMapOf<Int, Int>() }
     val b = banks.getValue(selectedUnit)
     val mcqs = if (tamil) b.mcqTa else b.mcqEn
     val prompts = if (part == "B") if (tamil) b.shortTa else b.shortEn
@@ -617,8 +633,8 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
         Column(Modifier.fillMaxWidth().padding(14.dp)) {
             Text(if (tamil) "அலகுவாரி வினா வங்கி" else "Unit-wise assessment",
                 fontSize = 22.sp, fontWeight = FontWeight.Bold)
-            Text(if (tamil) "60 பல்தேர்வு · 40 குறுவினா · 25 விரிவான வினா"
-                 else "60 MCQs · 40 short-answer · 25 long-answer prompts", fontSize = 12.sp,
+            Text(if (tamil) "${banks.values.sumOf { it.mcqTa.size }} பல்தேர்வு · ${banks.values.sumOf { it.shortTa.size }} குறுவினா · ${banks.values.sumOf { it.longTa.size }} விரிவான வினா"
+                 else "${banks.values.sumOf { it.mcqEn.size }} MCQs · ${banks.values.sumOf { it.shortEn.size }} short-answer · ${banks.values.sumOf { it.longEn.size }} long-answer prompts", fontSize = 12.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(8.dp))
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(5.dp)) {
@@ -652,6 +668,7 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
                                 Row(Modifier.fillMaxWidth().clickable(enabled = !submitted) { answers[i] = idx }
                                     .padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                                     RadioButton(selected = answers[i] == idx,
+                                        modifier = Modifier.testTag("quiz-answer-$i-$idx"),
                                         onClick = { if (!submitted) answers[i] = idx },
                                         enabled = !submitted)
                                     Text("${'A' + idx}. $answer", fontSize = 14.sp,
