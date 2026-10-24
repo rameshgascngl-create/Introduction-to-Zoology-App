@@ -162,7 +162,8 @@ targets=[
 "original_orig2","original_orig10","original_orig14","original_orig16","original_orig17","native_lac",
 "notes_p57","notes_p58","notes_p40","original_orig5","original_orig6","original_orig15","original_orig22","atlas_cell","atlas_ecosystem",
 "supplement_systflow","supplement_celltheory","supplement_darwinselection","supplement_silkworm",
-"supplement_poultrybio","supplement_dairyhygiene","supplement_molecular","supplement_ecotourism"
+"supplement_poultrybio","supplement_dairyhygiene","supplement_molecular","supplement_ecotourism",
+"atlas_bee" # Corrected 2026-10-24 colony caste schematic; source SVG must generate student-facing PNG
 ]
 # Avoid distributing toxic Tamil squares: render via librsvg/Pango and require Tamil font availability.
 fc=subprocess.run(["fc-match","-f","%{family}\n",":lang=ta"],capture_output=True,text=True,check=True)
