@@ -12,6 +12,8 @@ import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.By
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,6 +85,16 @@ class NativeReaderSmokeTest {
             throw error
         } finally {
             bmp.recycle()
+        }
+        // Compose semantics can pass while Android System UI is stuck over
+        // the app. Visual QA MUST NOT accept screenshots behind an ANR dialog.
+        val device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+        val blocked = listOf("isn't responding", "is not responding",
+            "keeps stopping", "has stopped").any { phrase ->
+            device.hasObject(By.textContains(phrase))
+        }
+        check(!blocked) {
+            "VISUAL_QA_BLOCKED: Android system or app error dialog obscures $label"
         }
     }
 

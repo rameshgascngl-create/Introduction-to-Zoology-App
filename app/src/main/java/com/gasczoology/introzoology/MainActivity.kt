@@ -189,7 +189,7 @@ private fun ZoologyApp(data: Syllabus) {
                             fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(if (view == "chapter") "${chosen.id}  ·  ${if (tamil) "பாடம்" else "Chapter"}"
                              else if (view == "unit") "${if (tamil) "அலகு" else "Unit"} $currentUnit"
-                             else "Native textbook · v6.1.1 QA", fontSize = 12.sp)
+                             else "Native textbook · ${BuildConfig.VERSION_NAME}", fontSize = 12.sp)
                     }
                 },
                 navigationIcon = {

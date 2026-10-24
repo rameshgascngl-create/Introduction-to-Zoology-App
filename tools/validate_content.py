@@ -2,7 +2,13 @@
 import json,pathlib,re,collections,sys,hashlib,struct
 project=pathlib.Path(__file__).resolve().parents[1]; a=project/'app/src/main/assets'
 d=json.loads((a/'content.json').read_text('utf8'))
-assert d['edition'] in ('6.2.0-QA','6.2.0')
+# A textbook edition and Android version must always agree at build time.
+gradle=(project/'app/build.gradle.kts').read_text()
+version=re.search(r'versionName\s*=\s*"([^"]+)"',gradle)
+assert version, 'Missing Android versionName in Gradle'
+assert d['edition']==version.group(1),(
+    'Textbook edition does not match Android versionName',
+    d['edition'],version.group(1))
 assert len(d['units'])==5 and len(d['chapters'])==28
 assert len(d['plates'])==58
 assert len(d['questionBank'])==5
