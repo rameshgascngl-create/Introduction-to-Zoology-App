@@ -1,10 +1,10 @@
 {
-  "review_date": "2026-10-23",
+  "review_date": "2026-10-24",
   "release_tag": null,
-  "source_sha": null,
+  "source_sha": "4e754560814f90a399eaf289c803366ed13feae8",
   "automated": {
-    "content_validation": false,
-    "debug_build": false,
+    "content_validation": true,
+    "debug_build": true,
     "emulator_ui": false,
     "android_13": false,
     "android_14": false,
@@ -35,8 +35,15 @@
   },
   "release": {
     "signed_aab": false,
-    "target_api_36": false,
+    "target_api_36": true,
     "store_metadata": false,
     "privacy_review": false
+  },
+  "evidence": {
+    "clean_native_build": "https://github.com/rameshgascngl-create/Introduction-to-Zoology-App/actions/runs/40108129961",
+    "clean_native_build_sha": "4e754560814f90a399eaf289c803366ed13feae8",
+    "debug_apk_sha256": "0863f25f22e5061ee3b41d84838b66bfaed055032b698dd1ce4be53603858f89",
+    "latest_strict_emulator_result": "FAIL: Android system UI ANR overlays block valid visual QA in run 40105123384 (prior phase branch)",
+    "release_disposition": "BLOCKED: physical device, editorial, image rights and original production keystore outstanding"
   }
 }
