@@ -44,6 +44,13 @@ ecology=by_id['4.2']
 assert 'habitat' in ecology['contentEn'].lower()
 # Microhabitat has not been explicitly developed in recovered v6.3.0 lessons.
 # Track as an editorial gap instead of claiming a syllabus equivalence pass.
+# Standardise biology terminology without replacing Kotlin/Compose 'key' identifiers.
+# Tamil-medium TN classification materials use 'இருபிளவு திறவுகோல்' for Dichotomous key.
+taxonomy = by_id['1.1']['contentTa']
+assert 'வகைப்பாட்டு இனங்காணும் வழிகாட்டி (Identification key)' in taxonomy
+assert 'இருபிளவு திறவுகோல் (Dichotomous key)' in taxonomy
+assert 'இருகிளைத் திறவுகோல்' not in taxonomy
+assert 'ஒன்றுக்கொன்று மாறுபட்ட இரண்டு பண்புக் கூற்றுகளில்' in taxonomy
 assert 'வாழிடம்' in ecology['contentTa']
 assert 'niche' in ecology['contentEn'].lower()
 assert any('habitat' in q['q'].lower() for q in d['questionBank']['4']['mcqEn'])
