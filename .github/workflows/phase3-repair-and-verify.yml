@@ -1,0 +1,79 @@
+name: Phase III — scientific plates, Tamil raster and native verification
+on:
+  push:
+    branches: [phase3-science-tamil-qa]
+    paths:
+      - 'tools/repair_plates_phase3.py'
+      - 'tools/validate_content.py'
+      - 'app/src/main/assets/content.json'
+      - 'app/src/main/assets/svg/**'
+      - 'app/src/main/assets/plates/**'
+      - 'app/src/main/java/**'
+      - '.github/workflows/phase3-repair-and-verify.yml'
+      - 'build.gradle.kts'
+      - 'app/build.gradle.kts'
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: write
+jobs:
+  repair-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pango-backed SVG renderer and Tamil fonts
+        shell: bash
+        run: |
+          sudo apt-get update -qq
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y librsvg2-bin fonts-noto-core
+          python3 -m pip install --user Pillow==11.3.0
+          fc-cache -f
+          fc-match -f '%{family}\n' ':lang=ta'
+      - name: Correct science flowcharts and regenerate corrected science and Tamil diagrams
+        run: python3 tools/repair_plates_phase3.py
+      - name: Assert new content, quiz and plate integrity
+        run: python3 tools/validate_content.py
+      - name: Configure Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Configure Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+      - name: SDK for Phase III QA
+        shell: bash
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Compile native debug with expanded bilingual question support
+        run: gradle --no-daemon --stacktrace :app:assembleDebug :app:assembleDebugAndroidTest
+      - name: Publish corrected images, immutable provenance and QA APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Introduction-Zoology-P3-Science-Tamil-QA
+          path: |
+            app/build/outputs/apk/debug/app-debug.apk
+            app/src/main/assets/plates/supplement_*.png
+            app/src/main/assets/plates/original_orig1*.png
+            app/src/main/assets/plates/native_lac.png
+            app/src/main/assets/plates/notes_p57.png
+            app/src/main/assets/plates/notes_p58.png
+          if-no-files-found: error
+          retention-days: 30
+      - name: Commit verified source master and raster corrections
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add app/src/main/assets/svg/ app/src/main/assets/plates/
+          if ! git diff --cached --quiet; then
+            git commit -m 'Render Tamil legibly; correct biology flow, meiosis, vitamins and nomenclature plates'
+            git fetch origin phase3-science-tamil-qa
+            git rebase origin/phase3-science-tamil-qa
+            git push origin HEAD:phase3-science-tamil-qa
+          fi

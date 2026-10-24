@@ -74,7 +74,7 @@ private data class TeachingPlate(
     val enCap: String, val taCap: String,
     val filename: String, val kind: String
 )
-private data class QuizQuestion(val question: String, val options: List<String>, val answer: Int)
+private data class QuizQuestion(val question: String, val options: List<String>, val answer: Int, val rationale: String)
 private data class QuestionBank(
     val mcqEn: List<QuizQuestion>, val mcqTa: List<QuizQuestion>,
     val shortEn: List<String>, val shortTa: List<String>,
@@ -95,7 +95,7 @@ private data class Syllabus(
             fun questions(j: org.json.JSONArray) = (0 until j.length()).map { i ->
                 val q = j.getJSONObject(i)
                 QuizQuestion(q.getString("q"), readStrings(q.getJSONArray("o")),
-                    q.getString("a").first().uppercaseChar() - 'A')
+                    q.getString("a").first().uppercaseChar() - 'A', q.optString("r", ""))
             }
             val questionBank = (1..5).associateWith { id ->
                 val b = exams.getJSONObject(id.toString())
@@ -189,12 +189,12 @@ private fun ZoologyApp(data: Syllabus) {
                             fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(if (view == "chapter") "${chosen.id}  ·  ${if (tamil) "பாடம்" else "Chapter"}"
                              else if (view == "unit") "${if (tamil) "அலகு" else "Unit"} $currentUnit"
-                             else "Native textbook · v6.1.1 QA", fontSize = 11.sp)
+                             else "Native textbook · ${BuildConfig.VERSION_NAME}", fontSize = 12.sp)
                     }
                 },
                 navigationIcon = {
                     if (view != "home") IconButton(onClick = { back() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = if (tamil) "பின்செல்க" else "Back")
                     } else Icon(Icons.Default.MenuBook, contentDescription = null,
                         modifier = Modifier.padding(horizontal = 14.dp), tint = MaterialTheme.colorScheme.primary)
                 },
@@ -209,7 +209,7 @@ private fun ZoologyApp(data: Syllabus) {
                             prefs.edit().putStringSet("bookmarks", bookmarks.toSet()).apply()
                         }) {
                             Icon(if (chosen.id in bookmarks) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
-                                contentDescription = "Bookmark")
+                                contentDescription = if (tamil) "புத்தகக்குறி" else "Bookmark")
                         }
                     }
                 },
@@ -267,7 +267,7 @@ private fun ZoologyApp(data: Syllabus) {
 @Composable
 private fun HomeScreen(data: Syllabus, tamil: Boolean, completed: List<String>,
     lastRead: String, onUnit: (Int) -> Unit, onContinue: (String) -> Unit, modifier: Modifier = Modifier) {
-    LazyColumn(modifier = modifier.fillMaxSize().background(MaterialTheme.colorScheme.background),
+    LazyColumn(modifier = modifier.testTag("homeScroller").fillMaxSize().background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item {
             Column(Modifier.fillMaxWidth().background(Navy, RoundedCornerShape(18.dp)).padding(22.dp)) {
@@ -460,7 +460,9 @@ private fun ChapterScreen(chapter: ChapterEntry, chapterList: List<ChapterEntry>
                     Text(if (tamil) plate.taTitle else plate.enTitle,
                         fontWeight = FontWeight.SemiBold, fontSize = 16.sp)
                     Spacer(Modifier.height(9.dp))
-                    NativePlate(plate.filename, modifier = Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 300.dp))
+                    NativePlate(plate.filename, description = if (tamil) plate.taTitle else plate.enTitle,
+                        unavailableMessage = if (tamil) "படம் கிடைக்கவில்லை" else "Diagram unavailable",
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 160.dp, max = 300.dp))
                     Spacer(Modifier.height(8.dp))
                     Text(if (tamil) plate.taCap else plate.enCap, fontSize = 13.sp)
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -539,17 +541,17 @@ private fun NativeRichText(html: String, size: Float) {
 }
 
 @Composable
-private fun NativePlate(file: String, modifier: Modifier = Modifier) {
+private fun NativePlate(file: String, description: String, unavailableMessage: String, modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val bitmap = remember(file) {
         runCatching { context.assets.open("plates/$file").use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
     }
     Box(modifier.background(Color(0xFFFAFCFD), RoundedCornerShape(10.dp)), contentAlignment = Alignment.Center) {
         if (bitmap != null) {
-            Image(bitmap = bitmap, contentDescription = file.removeSuffix(".png").replace('_', ' '),
+            Image(bitmap = bitmap, contentDescription = description,
                 modifier = Modifier.fillMaxWidth().padding(4.dp), contentScale = ContentScale.Fit)
         } else {
-            Text("Diagram unavailable: $file", color = Color.Red)
+            Text("$unavailableMessage: $file", color = Color.Red)
         }
     }
 }
@@ -569,7 +571,7 @@ private fun PlateDialog(plate: TeachingPlate, tamil: Boolean, onClose: () -> Uni
                     Text(if (tamil) plate.taTitle else plate.enTitle, modifier = Modifier.weight(1f),
                         fontWeight = FontWeight.Bold, fontSize = 17.sp, maxLines = 2)
                     IconButton(onClick = onClose) {
-                        Icon(Icons.Default.Close, contentDescription = "Close image")
+                        Icon(Icons.Default.Close, contentDescription = if (tamil) "படத்தை மூடுக" else "Close image")
                     }
                 }
                 Box(Modifier.fillMaxWidth().weight(1f).background(Color.White)
@@ -613,17 +615,39 @@ private fun PlateDialog(plate: TeachingPlate, tamil: Boolean, onClose: () -> Uni
 private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, selectedUnit: Int,
     onUnit: (Int) -> Unit, modifier: Modifier = Modifier) {
     var part by rememberSaveable { mutableStateOf("A") }
-    var submitted by rememberSaveable(selectedUnit, part) { mutableStateOf(false) }
-    val answers = rememberSaveable(selectedUnit, part, saver = mapSaver(
-        save = { choices: androidx.compose.runtime.snapshots.SnapshotStateMap<Int, Int> ->
-            choices.mapKeys { it.key.toString() }
-        },
-        restore = { saved ->
-            mutableStateMapOf<Int, Int>().apply {
-                saved.forEach { (key, value) -> this[key.toInt()] = value as Int }
-            }
+    val context = LocalContext.current
+    val quizPrefs = remember(context) {
+        context.getSharedPreferences("native_intro_zoology_quiz_v1", Context.MODE_PRIVATE)
+    }
+    val answerKey = "unit_${selectedUnit}_${part}_answers"
+    val submittedKey = "unit_${selectedUnit}_${part}_submitted"
+    // A fresh Activity has a fresh composition. Restore draft answers from
+    // durable Android preferences instead of relying on nested Compose saves.
+    val answers = remember(selectedUnit, part) {
+        mutableStateMapOf<Int, Int>().apply {
+            quizPrefs.getString(answerKey, "").orEmpty().split(',')
+                .filter { it.isNotBlank() }.forEach { record ->
+                    val pair = record.split(':', limit = 2)
+                    if (pair.size == 2) {
+                        val index = pair[0].toIntOrNull()
+                        val option = pair[1].toIntOrNull()
+                        if (index != null && option != null && index >= 0 && option in 0..3) {
+                            this[index] = option
+                        }
+                    }
+                }
         }
-    )) { mutableStateMapOf<Int, Int>() }
+    }
+    var submitted by remember(selectedUnit, part) {
+        mutableStateOf(quizPrefs.getBoolean(submittedKey, false))
+    }
+    fun recordAnswer(index: Int, option: Int) {
+        answers[index] = option
+        quizPrefs.edit().putString(
+            answerKey, answers.entries.sortedBy { it.key }
+                .joinToString(",") { "${it.key}:${it.value}" }
+        ).apply()
+    }
     val b = banks.getValue(selectedUnit)
     val mcqs = if (tamil) b.mcqTa else b.mcqEn
     val prompts = if (part == "B") if (tamil) b.shortTa else b.shortEn
@@ -650,8 +674,11 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
                 }
             }
         }
-        LazyColumn(contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth().weight(1f).testTag("quizScroller"),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
             if (part == "A") {
                 item {
                     Text(if (tamil) "சரியான விடையைத் தேர்வு செய்து மதிப்பெண்ணைக் காண்க."
@@ -665,24 +692,31 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
                             Text("${i + 1}. ${q.question}", fontWeight = FontWeight.SemiBold,
                                 lineHeight = 23.sp)
                             q.options.forEachIndexed { idx, answer ->
-                                Row(Modifier.fillMaxWidth().clickable(enabled = !submitted) { answers[i] = idx }
+                                Row(Modifier.fillMaxWidth().clickable(enabled = !submitted) { recordAnswer(i, idx) }
                                     .padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
                                     RadioButton(selected = answers[i] == idx,
                                         modifier = Modifier.testTag("quiz-answer-$i-$idx"),
-                                        onClick = { if (!submitted) answers[i] = idx },
+                                        onClick = { if (!submitted) recordAnswer(i, idx) },
                                         enabled = !submitted)
                                     Text("${'A' + idx}. $answer", fontSize = 14.sp,
                                         color = if (submitted && idx == q.answer) Green
                                                 else MaterialTheme.colorScheme.onSurface)
                                 }
                             }
-                            if (submitted) Text("${if (tamil) "சரியான விடை" else "Correct answer"}: ${'A' + q.answer}",
-                                color = Green, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                            if (submitted) {
+                                Text("${if (tamil) "சரியான விடை" else "Correct answer"}: ${'A' + q.answer}",
+                                    color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
+                                if (q.rationale.isNotBlank()) Text(q.rationale, modifier = Modifier.padding(top = 5.dp),
+                                    fontSize = 14.sp, lineHeight = 21.sp)
+                            }
                         }
                     }
                 }
                 item {
-                    if (!submitted) Button(onClick = { submitted = true },
+                    if (!submitted) Button(onClick = {
+                        submitted = true
+                        quizPrefs.edit().putBoolean(submittedKey, true).apply()
+                    },
                         enabled = answers.size == mcqs.size, modifier = Modifier.fillMaxWidth()) {
                         Text(if (tamil) "மதிப்பீட்டை முடிக்க" else "Submit all answers (${answers.size}/${mcqs.size})")
                     } else {
@@ -692,7 +726,11 @@ private fun QuestionScreen(banks: Map<Int, QuestionBank>, tamil: Boolean, select
                                     fontSize = 21.sp, fontWeight = FontWeight.Bold)
                                 Text(if (tamil) "விடைகளை மீண்டும் படித்து திருத்திக் கொள்ளுங்கள்."
                                     else "Review your responses against the highlighted correct answers.")
-                                TextButton(onClick = { answers.clear(); submitted = false }) {
+                                TextButton(onClick = {
+                                    answers.clear()
+                                    submitted = false
+                                    quizPrefs.edit().remove(answerKey).remove(submittedKey).apply()
+                                }) {
                                     Text(if (tamil) "மீண்டும் முயற்சி" else "Retake quiz")
                                 }
                             }
