@@ -86,6 +86,26 @@ for unit,bank in d['questionBank'].items():
 assert 'homeostasis' in by_id['3.5']['contentEn'].lower()
 assert 'digestive system' in by_id['3.5']['contentEn'].lower()
 assert 'சமநிலை பேணுதல்' in by_id['3.5']['contentTa']
+# Contextual Tamil zoological terminology regression checks.
+# 'திறவுகோல்' occurs in school textbooks, but this edition uses a descriptive
+# reader-friendly equivalent; do not blindly replace Kotlin Compose key().
+tamil_payload=json.dumps({
+    'chapters':[{'title':c['taTitle'],'lesson':c['contentTa'],'mis':c['misTa'],'activity':c['activityTa']} for c in d['chapters']],
+    'plates':[{'title':p['taTitle'],'caption':p['taCap']} for p in d['plates']],
+    'banks':{k:{name:val for name,val in q.items() if name.endswith('Ta')} for k,q in d['questionBank'].items()}
+},ensure_ascii=False)
+for wrong in ('திறவுகோல்','முறையியல்','மாதிரி மாதிரியம்','ஆலிலை வடிவம்',
+              'மும்மொழிப் பெயர்','சிற்றினப் பெயரடை','வாழ்க்கை நிலை'):
+    assert wrong not in tamil_payload,('Disallowed ambiguous Tamil translation',wrong)
+assert 'இருபிரிவு இனங்காணல் முறை (Dichotomous key)' in by_id['1.1']['contentTa']
+assert 'இனத்தொடர்பு தொகுப்பமைவியல் (Systematics)' in by_id['1.1']['contentTa']
+assert 'அமைப்பொத்த உறுப்புகள்' in by_id['1.1']['contentTa']
+assert 'செயலொத்த உறுப்புகள்' in by_id['1.1']['contentTa']
+assert 'முச்சொல் பெயர் – trinomen' in by_id['1.4']['contentTa']
+assert 'வகைப்பாட்டு மாதிரி நிர்ணயம் (Typification)' in by_id['1.4']['contentTa']
+assert 'குளோவர் இலை வடிவம்' in by_id['2.4']['contentTa']
+assert 'சூழலியல் பங்கு (Ecological niche)' in by_id['4.2']['contentTa']
+
 
 assert not any('android.webkit.WebView' in p.read_text() for p in (project/'app/src/main/java').rglob('*.kt'))
 sums=[sum(len(v[k]) for v in d['questionBank'].values()) for k in ('mcqEn','bEn','cEn')]
