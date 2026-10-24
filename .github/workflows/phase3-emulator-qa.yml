@@ -5,6 +5,7 @@ on:
     paths:
       - 'app/**'
       - 'tools/validate_content.py'
+      - 'tools/run_phase3_emulator_qa.sh'
       - '.github/workflows/phase3-emulator-qa.yml'
   workflow_dispatch:
 concurrency:
@@ -47,24 +48,7 @@ jobs:
           emulator-boot-timeout: 900
           force-avd-creation: true
           emulator-options: -no-window -no-audio -no-boot-anim -gpu swiftshader_indirect -no-snapshot -no-metrics
-          script: |
-            set +e
-            adb wait-for-device
-            adb shell getprop sys.boot_completed
-            gradle --no-daemon --stacktrace :app:connectedDebugAndroidTest
-            test_status=$?
-            mkdir -p qa-screenshots
-            adb shell run-as com.gasczoology.introzoology ls -la files/qa-screenshots > qa-screenshots/collection-log.txt 2>&1 || true
-            for shot in 06-quiz-landscape-before-scroll 01-home-en 02-diagram-fullscreen 03-chapter-tamil 04-bookmark-saved 05-quiz-portrait 06-quiz-landscape 07-all-units-tamil; do
-              adb exec-out run-as com.gasczoology.introzoology cat "files/qa-screenshots/${shot}.png" > "qa-screenshots/${shot}.png" 2>/dev/null
-              if [ "$?" -ne 0 ] || [ ! -s "qa-screenshots/${shot}.png" ]; then
-                rm -f "qa-screenshots/${shot}.png"
-              fi
-            done
-            adb shell uiautomator dump /sdcard/window.xml || true
-            adb pull /sdcard/window.xml qa-screenshots/window.xml || true
-            adb logcat -d -t 2000 > emulator-last-logcat.txt || true
-            exit "$test_status"
+          script: bash tools/run_phase3_emulator_qa.sh
       - name: Save instrumented-test evidence even when emulator fails
         if: always()
         uses: actions/upload-artifact@v4
