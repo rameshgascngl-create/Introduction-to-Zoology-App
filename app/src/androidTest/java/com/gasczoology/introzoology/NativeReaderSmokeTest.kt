@@ -2,12 +2,13 @@ package com.gasczoology.introzoology
 
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
+import android.content.ContentValues
+import android.provider.MediaStore
+import android.os.Environment
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
-import java.io.File
-import java.io.FileOutputStream
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,18 +20,40 @@ class NativeReaderSmokeTest {
     private fun shot(label: String) {
         rule.waitForIdle()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        // External storage can be unavailable while an emulator is booting.
-        // Always write to the app's internal files directory, then collect
-        // the screenshots with "adb exec-out run-as" from the debug build.
-        val dir = File(context.filesDir, "qa-screenshots")
-        check(dir.isDirectory || dir.mkdirs()) {
-            "Cannot create screenshot folder: ${dir.absolutePath}"
+        // Save to the shared MediaStore collection, not app-private storage.
+        // Gradle's connectedAndroidTest may remove the debug APK before
+        // screenshot collection, making "adb run-as" fail after test success.
+        val bmp = checkNotNull(
+            InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
+        ) { "UIAutomation screenshot was null: $label" }
+        val resolver = context.contentResolver
+        val values = ContentValues().apply {
+            put(MediaStore.Images.Media.DISPLAY_NAME, "$label.png")
+            put(MediaStore.Images.Media.MIME_TYPE, "image/png")
+            put(
+                MediaStore.Images.Media.RELATIVE_PATH,
+                "${Environment.DIRECTORY_PICTURES}/IntroductionZoologyQA/"
+            )
+            put(MediaStore.Images.Media.IS_PENDING, 1)
         }
-        val bmp = InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-        if (bmp != null) {
-            FileOutputStream(File(dir, "$label.png")).use { out ->
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, out)
+        val uri = checkNotNull(
+            resolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values)
+        ) { "MediaStore insert failed: $label" }
+        try {
+            checkNotNull(resolver.openOutputStream(uri)) {
+                "MediaStore output stream failed: $label"
+            }.use { out ->
+                check(bmp.compress(Bitmap.CompressFormat.PNG, 100, out)) {
+                    "PNG encode failed: $label"
+                }
             }
+            resolver.update(uri, ContentValues().apply {
+                put(MediaStore.Images.Media.IS_PENDING, 0)
+            }, null, null)
+        } catch (error: Exception) {
+            resolver.delete(uri, null, null)
+            throw error
+        } finally {
             bmp.recycle()
         }
     }
