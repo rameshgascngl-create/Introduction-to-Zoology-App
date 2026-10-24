@@ -250,16 +250,20 @@ private fun ZoologyApp(data: Syllabus) {
                 onChapter = { openChapter(it) }, modifier = Modifier.padding(inner))
             "quiz" -> QuestionScreen(data.questionBank, tamil, testUnit, onUnit = { testUnit = it },
                 modifier = Modifier.padding(inner))
-            "chapter" -> ChapterScreen(chosen, chapterList, currentIndex,
-                data.plates.filter { it.chapter == chosen.id }, tamil, textSize,
-                completed.contains(chosen.id),
-                onTextSize = { textSize = it; prefs.edit().putFloat("text_size", textSize).apply() },
-                onCompleted = { done ->
-                    if (done && chosen.id !in completed) completed.add(chosen.id)
-                    if (!done) completed.remove(chosen.id)
-                    prefs.edit().putStringSet("completed", completed.toSet()).apply()
-                },
-                onChapter = { openChapter(it) }, modifier = Modifier.padding(inner))
+            // A chapter is a new reading page: Compose must not retain the previous
+            // LazyColumn's scroll index or offset when Next/Previous changes its ID.
+            "chapter" -> key(chosen.id) {
+                ChapterScreen(chosen, chapterList, currentIndex,
+                    data.plates.filter { it.chapter == chosen.id }, tamil, textSize,
+                    completed.contains(chosen.id),
+                    onTextSize = { textSize = it; prefs.edit().putFloat("text_size", textSize).apply() },
+                    onCompleted = { done ->
+                        if (done && chosen.id !in completed) completed.add(chosen.id)
+                        if (!done) completed.remove(chosen.id)
+                        prefs.edit().putStringSet("completed", completed.toSet()).apply()
+                    },
+                    onChapter = { openChapter(it) }, modifier = Modifier.padding(inner))
+            }
         }
     }
 }

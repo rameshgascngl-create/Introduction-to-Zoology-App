@@ -191,4 +191,36 @@ class NativeReaderSmokeTest {
             .fetchSemanticsNodes().isNotEmpty()) { "Honey-bee PNG is not rendered in Tamil" }
         shot("09-bee-plate-ta")
     }
+
+    /**
+     * Regression for the reported bug: after advancing from the bottom of one
+     * lesson, Next/Previous must render the next chapter's heading immediately.
+     * Verify both English and Tamil without manually scrolling back to top.
+     */
+    @Test fun chapterNavigationStartsAtHeadingAfterNextPrevious() {
+        englishHome()
+        rule.onNodeWithTag("unit-1").performClick()
+        rule.onNodeWithTag("chapter-1.1").performClick()
+        rule.onNodeWithText("UNIT 1 · CHAPTER 1.1").assertIsDisplayed()
+
+        fun navigateFromBottom(buttonText: String, expectedHeading: String) {
+            rule.onNodeWithTag("chapterScroller")
+                .performScrollToNode(hasText(buttonText))
+            rule.onNodeWithText(buttonText).performClick()
+            rule.waitForIdle()
+            // A reused LazyListState would leave the new chapter at the bottom
+            // and the new heading would not be composed or visible.
+            rule.onNodeWithText(expectedHeading).assertIsDisplayed()
+        }
+
+        navigateFromBottom("Next →", "UNIT 1 · CHAPTER 1.2")
+        navigateFromBottom("Next →", "UNIT 1 · CHAPTER 1.3")
+        navigateFromBottom("← Previous", "UNIT 1 · CHAPTER 1.2")
+
+        rule.onNodeWithTag("languageToggle").performClick()
+        rule.onNodeWithText("அலகு 1 · பாடம் 1.2").assertIsDisplayed()
+        navigateFromBottom("அடுத்தது →", "அலகு 1 · பாடம் 1.3")
+        navigateFromBottom("← முந்தையது", "அலகு 1 · பாடம் 1.2")
+    }
+
 }
