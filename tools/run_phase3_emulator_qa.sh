@@ -15,7 +15,8 @@ import pathlib,struct,zlib,sys
 out=pathlib.Path("qa-screenshots")
 names=["01-home-en","02-diagram-fullscreen","03-chapter-tamil",
 "04-bookmark-saved","05-quiz-portrait","06-quiz-landscape-before-scroll",
-"06-quiz-landscape","07-all-units-tamil"]
+"06-quiz-landscape","07-all-units-tamil",
+"08-bee-plate-en","09-bee-plate-ta"]
 errors=[]
 for name in names:
     p=out/(name+".png")
@@ -49,7 +50,7 @@ if errors:
     print("SCREENSHOT_QA_FAIL:")
     print("\n".join(errors))
     sys.exit(2)
-print("SCREENSHOT_QA_PASS: 8 genuine PNG files")
+print("SCREENSHOT_QA_PASS: 10 genuine PNG files")
 PY
 image_status=$?
 adb shell uiautomator dump /sdcard/window.xml || true
@@ -63,4 +64,4 @@ if [[ "$image_status" -ne 0 ]]; then
     echo "FAIL: invalid/missing screenshot evidence" >&2
     exit "$image_status"
 fi
-echo "PASS: four UI tests and eight CRC-validated PNG screenshots"
+echo "PASS: five UI tests and ten CRC-validated PNG screenshots"

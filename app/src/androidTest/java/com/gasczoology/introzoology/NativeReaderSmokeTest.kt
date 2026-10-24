@@ -5,6 +5,9 @@ import android.graphics.Bitmap
 import android.content.ContentValues
 import android.provider.MediaStore
 import android.os.Environment
+import android.os.SystemClock
+import android.util.Log
+import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -17,15 +20,40 @@ import org.junit.runner.RunWith
 class NativeReaderSmokeTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 
+    /** Capture actual on-device pixels; use Compose only if UiAutomation has no frame.
+     * The fallback still captures the rendered Android Compose UI. A missing
+     * image or missing semantics remains a hard test failure.
+     */
+    private fun captureEvidenceBitmap(label: String): Bitmap {
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        repeat(4) { attempt ->
+            rule.waitForIdle()
+            val frame = runCatching { automation.takeScreenshot() }
+                .onFailure { Log.w("IntroZoologyQA", "Screenshot attempt ${attempt + 1} failed: $label", it) }
+                .getOrNull()
+            if (frame != null && frame.width >= 320 && frame.height >= 320) return frame
+            frame?.recycle()
+            SystemClock.sleep(400L)
+        }
+        Log.w("IntroZoologyQA", "UiAutomation unavailable for $label; capturing Compose root")
+        return try {
+            rule.onRoot().captureToImage().asAndroidBitmap().also { frame ->
+                check(frame.width >= 320 && frame.height >= 320) {
+                    "Compose fallback is too small: $label"
+                }
+            }
+        } catch (cause: Throwable) {
+            throw IllegalStateException("Both screenshot methods failed: $label", cause)
+        }
+    }
+
     private fun shot(label: String) {
         rule.waitForIdle()
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         // Save to the shared MediaStore collection, not app-private storage.
         // Gradle's connectedAndroidTest may remove the debug APK before
         // screenshot collection, making "adb run-as" fail after test success.
-        val bmp = checkNotNull(
-            InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()
-        ) { "UIAutomation screenshot was null: $label" }
+        val bmp = captureEvidenceBitmap(label)
         val resolver = context.contentResolver
         val values = ContentValues().apply {
             put(MediaStore.Images.Media.DISPLAY_NAME, "$label.png")
@@ -129,5 +157,26 @@ class NativeReaderSmokeTest {
         rule.onNodeWithTag("navQuiz").performClick()
         rule.onNodeWithTag("quizScroller").performScrollToNode(hasTestTag("quiz-answer-0-0"))
         rule.onNodeWithTag("quiz-answer-0-0").assertIsSelected()
+    }
+
+    @Test fun chapterFiveHoneyBeePlateRendersInEnglishAndTamil() {
+        englishHome()
+        rule.onNodeWithTag("homeScroller").performScrollToNode(hasTestTag("unit-5"))
+        rule.onNodeWithTag("unit-5").performClick()
+        rule.onNodeWithTag("chapter-5.2").performClick()
+        rule.onNodeWithTag("chapterScroller").performScrollToNode(hasTestTag("plate-bee"))
+        rule.onNodeWithTag("plate-bee").performClick()
+        rule.onNodeWithTag("plateDialog").assertExists()
+        check(rule.onAllNodesWithContentDescription("Honey-bee Colony Organisation")
+            .fetchSemanticsNodes().isNotEmpty()) { "Honey-bee PNG is not rendered in English" }
+        shot("08-bee-plate-en")
+        rule.onNodeWithContentDescription("Close image").performClick()
+        rule.onNodeWithTag("languageToggle").performClick()
+        rule.onNodeWithTag("chapterScroller").performScrollToNode(hasTestTag("plate-bee"))
+        rule.onNodeWithTag("plate-bee").performClick()
+        rule.onNodeWithTag("plateDialog").assertExists()
+        check(rule.onAllNodesWithContentDescription("தேனீக் கூட்டத்தின் அமைப்பு")
+            .fetchSemanticsNodes().isNotEmpty()) { "Honey-bee PNG is not rendered in Tamil" }
+        shot("09-bee-plate-ta")
     }
 }
