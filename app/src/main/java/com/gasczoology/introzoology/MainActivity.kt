@@ -421,7 +421,9 @@ private fun ChapterScreen(chapter: ChapterEntry, chapterList: List<ChapterEntry>
     onTextSize: (Float) -> Unit, onCompleted: (Boolean) -> Unit,
     onChapter: (ChapterEntry) -> Unit, modifier: Modifier = Modifier) {
     var expanded by remember(chapter.id) { mutableStateOf<TeachingPlate?>(null) }
-    LazyColumn(modifier = modifier.testTag("chapterScroller").fillMaxSize().background(MaterialTheme.colorScheme.background),
+    val chapterScrollState = remember(chapter.id) { androidx.compose.foundation.lazy.LazyListState() }
+    LaunchedEffect(chapter.id) { chapterScrollState.scrollToItem(0) }
+    LazyColumn(state = chapterScrollState, modifier = modifier.testTag("chapterScroller").fillMaxSize().background(MaterialTheme.colorScheme.background),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 26.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp)) {
         item(key = "heading") {
@@ -566,48 +568,75 @@ private fun PlateDialog(plate: TeachingPlate, tamil: Boolean, onClose: () -> Uni
     var pan by remember(plate.id) { mutableStateOf(Offset.Zero) }
     val context = LocalContext.current
     val bitmap = remember(plate.filename) {
-        runCatching { context.assets.open("plates/${plate.filename}").use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
+        runCatching { context.assets.open("plates/" + plate.filename).use { BitmapFactory.decodeStream(it)?.asImageBitmap() } }.getOrNull()
     }
     Dialog(onDismissRequest = onClose, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(modifier = Modifier.fillMaxSize().testTag("plateDialog"), color = MaterialTheme.colorScheme.surface) {
+        Surface(modifier = Modifier.fillMaxSize().testTag("plateDialog"),
+                color = MaterialTheme.colorScheme.surface) {
             Column {
-                Row(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Text(if (tamil) plate.taTitle else plate.enTitle, modifier = Modifier.weight(1f),
-                        fontWeight = FontWeight.Bold, fontSize = 17.sp, maxLines = 2)
+                Row(modifier = Modifier.fillMaxWidth().padding(14.dp),
+                    verticalAlignment = Alignment.CenterVertically) {
+                    Text(if (tamil) plate.taTitle else plate.enTitle,
+                         modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold,
+                         fontSize = 17.sp, maxLines = 2)
                     IconButton(onClick = onClose) {
                         Icon(Icons.Default.Close, contentDescription = if (tamil) "படத்தை மூடுக" else "Close image")
                     }
                 }
-                Box(Modifier.fillMaxWidth().weight(1f).background(Color.White)
-                    .pointerInput(plate.id) {
-                        detectTransformGestures { _, drag, magnification, _ ->
-                            zoom = (zoom * magnification).coerceIn(1f, 5f)
-                            pan = if (zoom <= 1.01f) Offset.Zero else pan + drag
+                BoxWithConstraints(
+                    modifier = Modifier.fillMaxWidth().weight(1f).background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (bitmap != null) {
+                        val viewportWidth = constraints.maxWidth.toFloat()
+                        val viewportHeight = constraints.maxHeight.toFloat()
+                        val baseFit = minOf(viewportWidth / bitmap.width.toFloat(),
+                                            viewportHeight / bitmap.height.toFloat())
+                        val fittedWidth = bitmap.width * baseFit
+                        val fittedHeight = bitmap.height * baseFit
+                        val maxPanX = ((fittedWidth * zoom - viewportWidth) / 2f).coerceAtLeast(0f)
+                        val maxPanY = ((fittedHeight * zoom - viewportHeight) / 2f).coerceAtLeast(0f)
+                        Box(Modifier.fillMaxSize()
+                            .pointerInput(plate.id, fittedWidth, fittedHeight) {
+                                detectTransformGestures { _, drag, magnification, _ ->
+                                    val updatedZoom = (zoom * magnification).coerceIn(1f, 5f)
+                                    val limitX = ((fittedWidth * updatedZoom - viewportWidth) / 2f).coerceAtLeast(0f)
+                                    val limitY = ((fittedHeight * updatedZoom - viewportHeight) / 2f).coerceAtLeast(0f)
+                                    zoom = updatedZoom
+                                    pan = if (zoom <= 1.001f) Offset.Zero else Offset(
+                                        (pan.x + drag.x).coerceIn(-limitX, limitX),
+                                        (pan.y + drag.y).coerceIn(-limitY, limitY))
+                                }
+                            }
+                            .pointerInput(plate.id) {
+                                detectTapGestures(onDoubleTap = {
+                                    zoom = if (zoom > 1.01f) 1f else 2f
+                                    pan = Offset.Zero
+                                })
+                            }, contentAlignment = Alignment.Center) {
+                            Image(bitmap = bitmap,
+                                contentDescription = if (tamil) plate.taTitle else plate.enTitle,
+                                contentScale = ContentScale.Fit,
+                                modifier = Modifier.fillMaxSize().graphicsLayer {
+                                    scaleX = zoom
+                                    scaleY = zoom
+                                    translationX = pan.x.coerceIn(-maxPanX, maxPanX)
+                                    translationY = pan.y.coerceIn(-maxPanY, maxPanY)
+                                })
                         }
+                    } else {
+                        Text(if (tamil) "படம் கிடைக்கவில்லை" else "Diagram unavailable",
+                            color = Color.Red, modifier = Modifier.padding(20.dp))
                     }
-                    .pointerInput(plate.id) {
-                        detectTapGestures(onDoubleTap = {
-                            zoom = if (zoom > 1f) 1f else 2.5f
-                            pan = Offset.Zero
-                        })
-                    }, contentAlignment = Alignment.Center) {
-                    if (bitmap != null) Image(bitmap = bitmap,
-                        contentDescription = if (tamil) plate.taTitle else plate.enTitle,
-                        contentScale = ContentScale.Fit,
-                        modifier = Modifier.fillMaxSize().graphicsLayer {
-                            scaleX = zoom
-                            scaleY = zoom
-                            translationX = pan.x
-                            translationY = pan.y
-                        })
                 }
                 Text(if (tamil) plate.taCap else plate.enCap,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp), fontSize = 13.sp)
+                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+                     fontSize = 13.sp)
                 OutlinedButton(onClick = { zoom = 1f; pan = Offset.Zero },
                     modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 14.dp)) {
                     Icon(Icons.Default.CenterFocusStrong, contentDescription = null)
                     Spacer(Modifier.width(5.dp))
-                    Text(if (tamil) "அசல் அளவு" else "Reset zoom")
+                    Text(if (tamil) "முழுப் படம்" else "Fit entire image")
                 }
             }
         }
