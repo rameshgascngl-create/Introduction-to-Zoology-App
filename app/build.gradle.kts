@@ -11,8 +11,8 @@ android {
         minSdk = 24
         targetSdk = 36
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        versionCode = 635
-        versionName = "6.3.5-QA"
+        versionCode = 636
+        versionName = "6.3.6-QA"
     }
     val signingReady = listOf(
         "ANDROID_KEYSTORE_PATH", "ANDROID_KEYSTORE_PASSWORD",

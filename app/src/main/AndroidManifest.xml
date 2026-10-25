@@ -5,6 +5,7 @@
         android:fullBackupContent="true"
         android:label="Introduction to Zoology"
         android:icon="@drawable/ic_intro_zoology"
+        android:roundIcon="@drawable/ic_intro_zoology"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">

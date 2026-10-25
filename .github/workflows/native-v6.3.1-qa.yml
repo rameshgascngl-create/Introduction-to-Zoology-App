@@ -1,4 +1,4 @@
-name: v6.3.5 scientific terminology and textbook QA
+name: v6.3.6 scientific terminology and textbook QA
 on:
   push:
     branches: [native-v6.3.1-qa-reconciled]
@@ -30,6 +30,12 @@ jobs:
         run: |
           python3 -m pip install 'CairoSVG>=2.7,<3'
           python3 tools/render_corrected_plates.py
+      - name: Verify approved launcher image resources
+        run: |
+          echo "edbf082b7b46bb05bf3bac8840ad397fcc19c799fbd8ff65c9d571ee1a3d3ca6  app/src/main/res/drawable-nodpi/zoology_launcher_legacy.webp" | sha256sum --check
+          echo "671620d2367d98971d80cf7a3614d5f5a4172aac9af7692063bef63f7fc2e046  app/src/main/res/drawable-nodpi/zoology_launcher_foreground.webp" | sha256sum --check
+          grep -q '@drawable/ic_intro_zoology' app/src/main/AndroidManifest.xml
+          test -s app/src/main/res/drawable-anydpi-v26/ic_intro_zoology.xml
       - name: Verify bilingual data and 58 figure assets
         run: python3 tools/validate_content.py
       - name: Cleanly compile native app and UI instrumentation tests
@@ -39,15 +45,15 @@ jobs:
           set -euo pipefail
           APK=app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > v635-badging.txt
-          grep -F "name='com.gasczoology.introzoology'" v635-badging.txt
-          grep -F "versionCode='635'" v635-badging.txt
-          grep -F "versionName='6.3.5-QA'" v635-badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > v636-badging.txt
+          grep -F "name='com.gasczoology.introzoology'" v636-badging.txt
+          grep -F "versionCode='636'" v636-badging.txt
+          grep -F "versionName='6.3.6-QA'" v636-badging.txt
           python3 - <<'PY'
           import zipfile,json
           with zipfile.ZipFile("app/build/outputs/apk/debug/app-debug.apk") as z:
               d=json.loads(z.read("assets/content.json"))
-              assert d["edition"]=="6.3.5-QA"
+              assert d["edition"]=="6.3.6-QA"
               assert d["editorialRevision"]["importedEdition"]=="6.3.0-QA"
               assert len(d["chapters"])==28 and len(d["plates"])==58
               assert len(d["units"])==5 and len(d["questionBank"])==5
@@ -55,15 +61,15 @@ jobs:
               assert len(plate_names)==58, len(plate_names)
           print("PASS: embedded native lesson content and version parity")
           PY
-          sha256sum "$APK" > v635-debug.sha256
+          sha256sum "$APK" > v636-debug.sha256
       - name: Publish development APK and audit evidence
         uses: actions/upload-artifact@v4
         with:
-          name: Introduction-to-Zoology-v6.3.5-Science-Accuracy-QA
+          name: Introduction-to-Zoology-v6.3.6-Science-Accuracy-QA
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-            v635-badging.txt
-            v635-debug.sha256
+            v636-badging.txt
+            v636-debug.sha256
           if-no-files-found: error
           retention-days: 30
