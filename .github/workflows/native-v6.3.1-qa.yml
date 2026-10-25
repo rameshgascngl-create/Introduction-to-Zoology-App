@@ -26,6 +26,10 @@ jobs:
         run: |
           yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null || true
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" 'platforms;android-36' 'build-tools;35.0.0'
+      - name: Render corrected scientific figure masters as PNG
+        run: |
+          python3 -m pip install 'CairoSVG>=2.7,<3'
+          python3 tools/render_corrected_plates.py
       - name: Verify bilingual data and 58 figure assets
         run: python3 tools/validate_content.py
       - name: Cleanly compile native app and UI instrumentation tests
