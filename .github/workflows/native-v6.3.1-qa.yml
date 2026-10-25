@@ -1,4 +1,4 @@
-name: v6.3.1 native content-reconciled Android build
+name: v6.3.2 Tamil terminology and native reader QA
 on:
   push:
     branches: [native-v6.3.1-qa-reconciled]
@@ -35,15 +35,15 @@ jobs:
           set -euo pipefail
           APK=app/build/outputs/apk/debug/app-debug.apk
           test -s "$APK"
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > v631-badging.txt
-          grep -F "name='com.gasczoology.introzoology'" v631-badging.txt
-          grep -F "versionCode='631'" v631-badging.txt
-          grep -F "versionName='6.3.1-QA'" v631-badging.txt
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" > v632-badging.txt
+          grep -F "name='com.gasczoology.introzoology'" v632-badging.txt
+          grep -F "versionCode='632'" v632-badging.txt
+          grep -F "versionName='6.3.2-QA'" v632-badging.txt
           python3 - <<'PY'
           import zipfile,json
           with zipfile.ZipFile("app/build/outputs/apk/debug/app-debug.apk") as z:
               d=json.loads(z.read("assets/content.json"))
-              assert d["edition"]=="6.3.1-QA"
+              assert d["edition"]=="6.3.2-QA"
               assert d["editorialRevision"]["importedEdition"]=="6.3.0-QA"
               assert len(d["chapters"])==28 and len(d["plates"])==58
               assert len(d["units"])==5 and len(d["questionBank"])==5
@@ -51,15 +51,15 @@ jobs:
               assert len(plate_names)==58, len(plate_names)
           print("PASS: embedded native lesson content and version parity")
           PY
-          sha256sum "$APK" > v631-debug.sha256
+          sha256sum "$APK" > v632-debug.sha256
       - name: Publish development APK and audit evidence
         uses: actions/upload-artifact@v4
         with:
-          name: Introduction-to-Zoology-v6.3.1-Reconciled-Native-QA
+          name: Introduction-to-Zoology-v6.3.2-Tamil-Editorial-QA
           path: |
             app/build/outputs/apk/debug/app-debug.apk
             app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
-            v631-badging.txt
-            v631-debug.sha256
+            v632-badging.txt
+            v632-debug.sha256
           if-no-files-found: error
           retention-days: 30

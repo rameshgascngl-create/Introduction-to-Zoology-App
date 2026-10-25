@@ -98,13 +98,21 @@ for wrong in ('திறவுகோல்','முறையியல்','ம�
               'மும்மொழிப் பெயர்','சிற்றினப் பெயரடை','வாழ்க்கை நிலை'):
     assert wrong not in tamil_payload,('Disallowed ambiguous Tamil translation',wrong)
 assert 'இருபிரிவு இனங்காணல் முறை (Dichotomous key)' in by_id['1.1']['contentTa']
-assert 'இனத்தொடர்பு தொகுப்பமைவியல் (Systematics)' in by_id['1.1']['contentTa']
+assert 'இனத்தொடர்பு தொகுப்பமைவு (Systematics)' in by_id['1.1']['contentTa']
 assert 'அமைப்பொத்த உறுப்புகள்' in by_id['1.1']['contentTa']
 assert 'செயலொத்த உறுப்புகள்' in by_id['1.1']['contentTa']
 assert 'முச்சொல் பெயர் – trinomen' in by_id['1.4']['contentTa']
 assert 'வகைப்பாட்டு மாதிரி நிர்ணயம் (Typification)' in by_id['1.4']['contentTa']
 assert 'குளோவர் இலை வடிவம்' in by_id['2.4']['contentTa']
 assert 'சூழலியல் பங்கு (Ecological niche)' in by_id['4.2']['contentTa']
+assert 'முதுகுப்புறக் குழல்வடிவ நரம்புநாண்' in by_id['1.6']['contentTa']
+assert 'சமச்சீர் (Symmetry)' in by_id['1.5']['contentTa']
+assert 'நவீன உருவாக்கக் கோட்பாடு' in by_id['4.6']['contentTa']
+assert 'மரபியல் நகர்வு (Genetic drift)' in by_id['4.6']['contentTa']
+assert 'ஒப்பாரின்–ஹால்டேன்' in by_id['4.5']['contentTa']
+for inaccurate in ('செயற்கைக் கொள்கை','இனத்தொடர்பு தொகுப்பமைவியல்','சீரமைவு',
+                   'முதுகுப்புற உள்ளீடற்ற','மரபணு நகர்வு','வாழிடம் முகவரி; நிச் தொழில்'):
+    assert inaccurate not in tamil_payload,('Contextual mistranslation',inaccurate)
 
 
 assert not any('android.webkit.WebView' in p.read_text() for p in (project/'app/src/main/java').rglob('*.kt'))
