@@ -86,6 +86,24 @@ for unit,bank in d['questionBank'].items():
 assert 'homeostasis' in by_id['3.5']['contentEn'].lower()
 assert 'digestive system' in by_id['3.5']['contentEn'].lower()
 assert 'சமநிலை பேணுதல்' in by_id['3.5']['contentTa']
+# Editorial QA: enforce both-language parity for microhabitat and germ layers.
+ecology = by_id['4.2']
+embryology = by_id['4.4']
+assert 'Microhabitat:' in ecology['contentEn'] and 'நுண்வாழிடம் (Microhabitat)' in ecology['contentTa']
+assert 'a <em>place</em>' in ecology['contentEn'] and 'நுண்வாழிடம் என்பது' in ecology['contentTa']
+assert 'சூழலியல் பங்குயும்' not in ecology['contentTa']
+assert 'ஓம்புயிரிக்குத் தீங்கு' in ecology['contentTa'] and 'விருந்தோம்பிக்குத் தீங்கு' not in ecology['contentTa']
+assert 'does not always follow one fixed path' in ecology['contentEn']
+assert 'நிரந்தர முடிவை அடைவதில்லை' in ecology['contentTa']
+assert 'Sponges (Porifera) lack true tissues and true germ layers' in embryology['contentEn']
+assert 'கடற்பஞ்சுகளுக்கு (Porifera) உண்மையான திசுக்களோ கருப்படைகளோ இல்லை' in embryology['contentTa']
+assert 'Sponges and cnidarians have only two layers' not in embryology['contentEn']
+assert 'கடற்பஞ்சுகள், நிடேரியர்களுக்கு இரு படைகள்' not in embryology['contentTa']
+assert 'மூவடுக்குக் கருக்கோளமாக்கம் (Gastrulation)' in embryology['contentTa']
+assert 'பிளவிப்பெருகல் (Cleavage)' in embryology['contentTa']
+assert 'இருபால் உயிரிகள் (hermaphrodites)' in by_id['1.5']['contentTa']
+assert 'ஈருடலிகள்' not in by_id['1.5']['contentTa']
+assert 'ஓம்புயிரி செல்களில்' in by_id['5.6']['contentTa']
 # Contextual Tamil zoological terminology regression checks.
 # 'திறவுகோல்' occurs in school textbooks, but this edition uses a descriptive
 # reader-friendly equivalent; do not blindly replace Kotlin Compose key().
