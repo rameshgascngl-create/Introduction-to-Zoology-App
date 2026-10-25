@@ -86,6 +86,19 @@ for unit,bank in d['questionBank'].items():
 assert 'homeostasis' in by_id['3.5']['contentEn'].lower()
 assert 'digestive system' in by_id['3.5']['contentEn'].lower()
 assert 'சமநிலை பேணுதல்' in by_id['3.5']['contentTa']
+# Bilingual scientific correctness: verified historical and conceptual issues.
+assert 'compound microscope' in by_id['2.1']['contentEn']
+assert 'கூட்டு நுண்ணோக்கி' in by_id['2.1']['contentTa']
+assert 'bacteria in <strong>1676</strong>' in by_id['2.1']['contentEn']
+assert '1677-இல்' in by_id['2.1']['contentTa']
+assert 'unlinked genes' in by_id['2.3']['contentEn']
+assert 'பிணைப்பற்ற மரபணுக்களின்' in by_id['2.3']['contentTa']
+assert 'retrotransposons and in telomerase' in by_id['2.5']['contentEn']
+assert 'டெலோமிரேஸ்' in by_id['2.5']['contentTa']
+assert 'fortified foods' in by_id['3.4']['contentEn']
+assert 'செறிவூட்டப்பட்ட உணவுகளிலும்' in by_id['3.4']['contentTa']
+assert 'ஊர்ந்து செல்லும் முதல் பருவ இளம்பூச்சிகள்' in by_id['5.4']['contentTa']
+assert 'ஊர்வன இளம் உயிரிகள்' not in by_id['5.4']['contentTa']
 # Editorial QA: enforce both-language parity for microhabitat and germ layers.
 ecology = by_id['4.2']
 embryology = by_id['4.4']
